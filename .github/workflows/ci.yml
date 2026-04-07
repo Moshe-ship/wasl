@@ -27,7 +27,7 @@ jobs:
         run: python -m pytest tests/test_mocked.py -v
 
       - name: Contract check — all errors are Arabic
-        run: python -m pytest tests/test_mocked.py::test_all_error_messages_are_arabic -v
+        run: python -m pytest tests/test_mocked.py::test_all_errors_arabic -v
 
       - name: Import check — server loads all tools
         run: python -c "from src.server import mcp; print(f'Server {mcp.name} loaded')"

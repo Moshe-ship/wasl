@@ -113,9 +113,9 @@ def test_arabizi_conversion():
     result = _arabizi_to_arabic("marhaba")
     assert not any("a" <= c <= "z" for c in result), f"Latin chars in: {result}"
 
-    # yalla -> يلا
+    # yalla -> يلا (doubled L = shadda = single ل, final a = ا)
     result = _arabizi_to_arabic("yalla")
-    assert "ي" in result and "ل" in result
+    assert result == "يلا", f"Expected يلا, got {result}"
 
 
 def test_names_db():

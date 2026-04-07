@@ -131,7 +131,17 @@ def _arabizi_to_arabic(text: str) -> str:
         w = word
         for lat, ar in MULTI:
             w = w.replace(lat, ar)
-        # Apply long vowels
+
+        # Deduplicate doubled consonants (shadda) BEFORE vowel processing
+        # In Arabizi, "ll" = ل with shadda, "mm" = م with shadda, etc.
+        deduped = []
+        for j, ch in enumerate(w):
+            if j > 0 and ch == w[j - 1] and ch in CONSONANTS:
+                continue  # Skip the second of a doubled consonant
+            deduped.append(ch)
+        w = "".join(deduped)
+
+        # Apply long vowels AFTER dedup
         for lat, ar in LONG_VOWELS.items():
             w = w.replace(lat, ar)
 
@@ -171,12 +181,15 @@ def _arabizi_to_arabic(text: str) -> str:
                     # Word-initial vowel: emit alef
                     out.append("ا" if c == "a" else "ي" if c in "ei" else "و")
                 elif at_end:
-                    # Word-final: emit if it's i/y (common in Arabic names)
+                    # Word-final vowels: always emit (they're real letters)
                     if c in "iy":
                         out.append("ي")
                     elif c in "ou":
                         out.append("و")
-                    # Final 'a' and 'e' are usually silent in Arabic
+                    elif c == "a":
+                        out.append("ا")
+                    elif c == "e":
+                        out.append("ة")  # taa marbuta is common word-final 'e'
                 else:
                     # Mid-word: 'a' and 'e' are short vowels (fatha/kasra) — drop
                     # 'i' maps to ي, 'u'/'o' maps to و (these are real Arabic letters)
