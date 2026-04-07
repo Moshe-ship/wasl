@@ -7,103 +7,109 @@
 <meta name="description" content="34 Arabic tools across 12 categories. Works with Claude Code, Goose, Cursor, Windsurf, and any MCP client.">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0a0a0a;--fg:#e5e5e5;--fg-dim:#a3a3a3;--fg-muted:#737373;--accent:#22c55e;--surface:#141414;--border:#262626;--radius:6px}
+:root{
+  --bg:#0a0a0a;
+  --fg:#e5e5e5;
+  --fg-dim:#a3a3a3;
+  --fg-muted:#737373;
+  --accent:#22c55e;
+  --surface:#111111;
+  --border:#1e1e1e;
+  --radius:4px;
+}
 html{font-size:16px;scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
-code,pre,.mono{font-family:"SF Mono","Cascadia Code","Fira Code",Consolas,"Liberation Mono",Menlo,monospace}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+code,pre,.mono{font-family:"SF Mono","Cascadia Code","Fira Code",Consolas,"Liberation Mono",Menlo,monospace;font-size:.9em}
 a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
+::selection{background:var(--accent);color:var(--bg)}
 
 /* Layout */
-.container{max-width:960px;margin:0 auto;padding:0 24px}
-section{padding:96px 0}
-@media(max-width:640px){section{padding:64px 0}}
+.wrap{max-width:880px;margin:0 auto;padding:0 24px}
+section{padding:96px 0;border-bottom:1px solid var(--border)}
+@media(max-width:640px){section{padding:64px 0}.wrap{padding:0 16px}}
 
 /* Section headings */
-.section-label{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;font-weight:600}
-.section-title{font-size:1.75rem;font-weight:700;margin-bottom:16px;line-height:1.25}
-.section-desc{color:var(--fg-dim);max-width:640px;font-size:1.05rem;line-height:1.7}
+.label{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;font-weight:600;font-family:"SF Mono","Cascadia Code","Fira Code",Consolas,monospace}
+.title{font-size:1.6rem;font-weight:700;margin-bottom:16px;line-height:1.3}
+.desc{color:var(--fg-dim);max-width:600px;font-size:.95rem;line-height:1.7}
 
 /* ===== HERO ===== */
-.hero{padding:120px 0 96px;text-align:center;border-bottom:1px solid var(--border)}
-.hero-ar{font-size:clamp(4rem,12vw,8rem);font-weight:800;letter-spacing:-.02em;line-height:1;margin-bottom:8px;direction:rtl}
-.hero-subtitle{font-size:clamp(1rem,2.5vw,1.25rem);color:var(--fg-dim);margin-bottom:8px}
-.hero-tagline{font-size:.95rem;color:var(--fg-muted);margin-bottom:40px}
-.hero-install{display:inline-block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 32px;font-size:1rem}
-.hero-install code{color:var(--accent)}
-.hero-meta{margin-top:24px;font-size:.8rem;color:var(--fg-muted)}
+.hero{padding:140px 0 100px;text-align:center}
+.hero-ar{font-size:clamp(5rem,14vw,9rem);font-weight:800;line-height:1;margin-bottom:12px;direction:rtl;letter-spacing:-.01em}
+.hero-sub{font-size:clamp(.95rem,2.2vw,1.15rem);color:var(--fg-dim);margin-bottom:6px}
+.hero-tag{font-size:.85rem;color:var(--fg-muted);margin-bottom:48px}
+.hero-cmd{display:inline-block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 28px;font-size:.95rem}
+.hero-cmd code{color:var(--accent)}
+.hero-cmd .prompt{color:var(--fg-muted);user-select:none}
+.hero-meta{margin-top:20px;font-size:.75rem;color:var(--fg-muted);letter-spacing:.02em}
 
-/* ===== THE GAP ===== */
-.gap{border-bottom:1px solid var(--border)}
-.gap-number{font-size:clamp(2.5rem,6vw,4rem);font-weight:800;color:var(--accent);line-height:1}
-.gap-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px;margin-top:48px}
-.gap-stat{border-left:2px solid var(--border);padding-left:20px}
-.gap-stat-label{font-size:.85rem;color:var(--fg-muted);margin-top:4px}
+/* ===== GAP ===== */
+.gap-num{font-size:clamp(2.5rem,7vw,4.5rem);font-weight:800;color:var(--accent);line-height:1;font-family:"SF Mono","Cascadia Code","Fira Code",Consolas,monospace}
+.gap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:32px;margin-top:48px}
+.gap-item{border-left:2px solid var(--border);padding-left:16px}
+.gap-item-label{font-size:.8rem;color:var(--fg-muted);margin-top:4px}
 
-/* ===== TOOLS GRID ===== */
-.tools{border-bottom:1px solid var(--border)}
-.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:40px}
-.tool-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
-.tool-card-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
-.tool-card-name{font-weight:600;font-size:.95rem}
-.tool-card-count{font-size:.75rem;color:var(--accent);font-weight:600;background:rgba(34,197,94,.1);padding:2px 8px;border-radius:3px}
-.tool-card-ar{font-size:.85rem;color:var(--fg-muted);direction:rtl}
+/* ===== TOOLS ===== */
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:36px}
+.t-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+.t-card-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.t-card-name{font-weight:600;font-size:.88rem}
+.t-card-n{font-size:.7rem;color:var(--accent);font-weight:700;background:rgba(34,197,94,.08);padding:2px 7px;border-radius:2px;font-family:"SF Mono","Cascadia Code","Fira Code",Consolas,monospace}
+.t-card-ar{font-size:.82rem;color:var(--fg-muted);direction:rtl;text-align:right}
 
-/* ===== HOW IT WORKS ===== */
-.how{border-bottom:1px solid var(--border)}
-.steps{margin-top:40px;display:flex;flex-direction:column;gap:0}
-.step{display:flex;gap:20px;align-items:flex-start;padding:20px 0;border-top:1px solid var(--border)}
-.step-num{font-size:.75rem;font-weight:700;color:var(--accent);background:rgba(34,197,94,.1);width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;margin-top:2px}
-.step-content{flex:1}
-.step-code{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;margin-top:8px;font-size:.9rem;overflow-x:auto}
-.step-label{font-weight:600;font-size:.95rem}
-.step-desc{font-size:.85rem;color:var(--fg-dim);margin-top:4px}
+/* ===== STEPS ===== */
+.steps{margin-top:36px}
+.step{display:flex;gap:16px;align-items:flex-start;padding:18px 0;border-top:1px solid var(--border)}
+.step-n{font-size:.7rem;font-weight:700;color:var(--accent);background:rgba(34,197,94,.08);min-width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;margin-top:1px;font-family:"SF Mono","Cascadia Code","Fira Code",Consolas,monospace}
+.step-body{flex:1}
+.step-h{font-weight:600;font-size:.9rem}
+.step-cmd{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 14px;margin-top:6px;font-size:.85rem;overflow-x:auto}
+.step-cmd .prompt{color:var(--fg-muted);user-select:none}
+.step-p{font-size:.82rem;color:var(--fg-dim);margin-top:6px;line-height:1.6}
 
-/* ===== COMPATIBILITY ===== */
-.compat{border-bottom:1px solid var(--border)}
-.compat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:40px}
-.compat-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
-.compat-name{font-weight:500;font-size:.9rem}
-.compat-check{color:var(--accent);font-weight:700;font-size:1.1rem}
+/* ===== COMPAT ===== */
+.compat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:36px}
+.compat-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+.compat-name{font-weight:500;font-size:.85rem}
+.compat-ok{color:var(--accent);font-weight:700;font-size:1rem}
 
 /* ===== DIALECTS ===== */
-.dialects{border-bottom:1px solid var(--border)}
-.dialect-table{width:100%;margin-top:40px;border-collapse:collapse}
-.dialect-table th{text-align:left;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-muted);padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600}
-.dialect-table td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:.95rem}
-.dialect-table .ar-cell{direction:rtl;text-align:right;font-size:1.05rem}
-.dialect-table tr:last-child td{border-bottom:none}
+.d-table{width:100%;margin-top:36px;border-collapse:collapse}
+.d-table th{text-align:left;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-muted);padding:10px 14px;border-bottom:1px solid var(--border);font-weight:600}
+.d-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:.9rem}
+.d-table .ar{direction:rtl;text-align:right;font-size:1rem}
+.d-table tr:last-child td{border-bottom:none}
+.d-table code{font-size:.8rem;color:var(--fg-dim)}
 
 /* ===== ECOSYSTEM ===== */
-.ecosystem{border-bottom:1px solid var(--border)}
-.eco-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:40px}
-.eco-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px}
-.eco-card-ar{font-size:1.4rem;font-weight:700;direction:rtl;margin-bottom:4px}
-.eco-card-en{font-size:.85rem;color:var(--fg-dim);margin-bottom:12px}
-.eco-card-platform{font-size:.8rem;color:var(--fg-muted)}
-.eco-card-stat{font-size:.9rem;color:var(--accent);font-weight:600;margin-top:8px}
-.eco-footer{margin-top:32px;text-align:center;font-size:.95rem;color:var(--fg-dim)}
+.eco-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:36px}
+.eco-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px}
+.eco-ar{font-size:1.5rem;font-weight:700;direction:rtl;margin-bottom:2px}
+.eco-en{font-size:.8rem;color:var(--fg-dim);margin-bottom:10px}
+.eco-plat{font-size:.75rem;color:var(--fg-muted)}
+.eco-stat{font-size:.85rem;color:var(--accent);font-weight:600;margin-top:8px}
+.eco-note{margin-top:28px;text-align:center;font-size:.9rem;color:var(--fg-dim);font-style:italic}
 
 /* ===== FOOTER ===== */
-footer{border-top:1px solid var(--border);padding:48px 0;text-align:center}
-.footer-line{font-size:.85rem;color:var(--fg-muted);margin-bottom:8px}
-.footer-links{display:flex;gap:24px;justify-content:center;margin-top:16px;flex-wrap:wrap}
-.footer-links a{font-size:.85rem;color:var(--fg-dim)}
-.footer-links a:hover{color:var(--accent)}
+footer{padding:48px 0;text-align:center;border-top:none}
+footer p{font-size:.8rem;color:var(--fg-muted);margin-bottom:6px}
+.f-links{display:flex;gap:20px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.f-links a{font-size:.8rem;color:var(--fg-dim)}
+.f-links a:hover{color:var(--accent)}
 
 /* Responsive */
 @media(max-width:640px){
-  .container{padding:0 16px}
   .tools-grid{grid-template-columns:1fr 1fr}
   .compat-grid{grid-template-columns:1fr 1fr}
   .eco-grid{grid-template-columns:1fr}
-  .gap-stats{grid-template-columns:1fr}
-  .dialect-table{font-size:.85rem}
-  .dialect-table th,.dialect-table td{padding:10px 12px}
+  .gap-grid{grid-template-columns:1fr 1fr}
+  .d-table th,.d-table td{padding:8px 10px}
 }
 @media(max-width:380px){
   .tools-grid{grid-template-columns:1fr}
   .compat-grid{grid-template-columns:1fr}
+  .gap-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -111,163 +117,125 @@ footer{border-top:1px solid var(--border);padding:48px 0;text-align:center}
 
 <!-- HERO -->
 <section class="hero">
-<div class="container">
-  <div class="hero-ar">&#x0648;&#x0635;&#x0644;</div>
-  <p class="hero-subtitle">The first comprehensive Arabic MCP server</p>
-  <p class="hero-tagline">One server. 34 Arabic tools. Every MCP client.</p>
-  <div class="hero-install">
-    <code>pip install wasl-mcp</code>
-  </div>
+<div class="wrap">
+  <div class="hero-ar">وصل</div>
+  <p class="hero-sub">The first comprehensive Arabic MCP server</p>
+  <p class="hero-tag">One server. 34 Arabic tools. Every MCP client.</p>
+  <div class="hero-cmd"><code><span class="prompt">$ </span>pip install wasl-mcp</code></div>
   <p class="hero-meta">MIT License / Python 3.10+ / v0.3</p>
 </div>
 </section>
 
 <!-- THE GAP -->
-<section class="gap">
-<div class="container">
-  <span class="section-label">The gap</span>
-  <h2 class="section-title">330 million Arabic speakers.<br>Zero comprehensive Arabic MCP servers.<br>Until now.</h2>
-  <div class="gap-stats">
-    <div class="gap-stat">
-      <div class="gap-number">330M</div>
-      <div class="gap-stat-label">Arabic speakers worldwide</div>
+<section>
+<div class="wrap">
+  <span class="label">The gap</span>
+  <h2 class="title">422 million Arabic speakers.<br>Zero comprehensive Arabic MCP servers.<br>Until now.</h2>
+  <div class="gap-grid">
+    <div class="gap-item">
+      <div class="gap-num">330M</div>
+      <div class="gap-item-label">Arabic speakers worldwide</div>
     </div>
-    <div class="gap-stat">
-      <div class="gap-number">0</div>
-      <div class="gap-stat-label">Comprehensive Arabic MCP servers before Wasl</div>
+    <div class="gap-item">
+      <div class="gap-num">0</div>
+      <div class="gap-item-label">Comprehensive Arabic MCP servers before Wasl</div>
     </div>
-    <div class="gap-stat">
-      <div class="gap-number">34</div>
-      <div class="gap-stat-label">Tools across 12 categories, all free APIs</div>
+    <div class="gap-item">
+      <div class="gap-num">34</div>
+      <div class="gap-item-label">Tools across 12 categories</div>
     </div>
-    <div class="gap-stat">
-      <div class="gap-number">5</div>
-      <div class="gap-stat-label">Arabic dialects supported natively</div>
+    <div class="gap-item">
+      <div class="gap-num">5</div>
+      <div class="gap-item-label">Arabic dialects supported</div>
     </div>
   </div>
 </div>
 </section>
 
 <!-- TOOLS -->
-<section class="tools">
-<div class="container">
-  <span class="section-label">Tools</span>
-  <h2 class="section-title">34 tools across 12 categories</h2>
-  <p class="section-desc">All free APIs. No paid keys required for most tools. Arabic-first design.</p>
+<section>
+<div class="wrap">
+  <span class="label">Tools</span>
+  <h2 class="title">34 tools. 12 categories. All free APIs.</h2>
+  <p class="desc">Arabic-first design. No paid keys required for most tools.</p>
   <div class="tools-grid">
-    <div class="tool-card">
-      <div class="tool-card-header">
-        <span class="tool-card-name">Prayer</span>
-        <span class="tool-card-count">2</span>
-      </div>
-      <div class="tool-card-ar">&#x0623;&#x0648;&#x0642;&#x0627;&#x062A; &#x0627;&#x0644;&#x0635;&#x0644;&#x0627;&#x0629;</div>
+    <div class="t-card">
+      <div class="t-card-top"><span class="t-card-name">Prayer</span><span class="t-card-n">2</span></div>
+      <div class="t-card-ar">أوقات الصلاة</div>
     </div>
-    <div class="tool-card">
-      <div class="tool-card-header">
-        <span class="tool-card-name">Quran</span>
-        <span class="tool-card-count">3</span>
-      </div>
-      <div class="tool-card-ar">&#x0627;&#x0644;&#x0642;&#x0631;&#x0622;&#x0646;</div>
+    <div class="t-card">
+      <div class="t-card-top"><span class="t-card-name">Quran</span><span class="t-card-n">3</span></div>
+      <div class="t-card-ar">القرآن</div>
     </div>
-    <div class="tool-card">
-      <div class="tool-card-header">
-        <span class="tool-card-name">Hadith</span>
-        <span class="tool-card-count">2</span>
-      </div>
-      <div class="tool-card-ar">&#x0627;&#x0644;&#x062D;&#x062F;&#x064A;&#x062B;</div>
+    <div class="t-card">
+      <div class="t-card-top"><span class="t-card-name">Hadith</span><span class="t-card-n">2</span></div>
+      <div class="t-card-ar">الحديث</div>
     </div>
-    <div class="tool-card">
-      <div class="tool-card-header">
-        <span class="tool-card-name">Hijri</span>
-        <span class="tool-card-count">3</span>
-      </div>
-      <div class="tool-card-ar">&#x0627;&#x0644;&#x062A;&#x0642;&#x0648;&#x064A;&#x0645; &#x0627;&#x0644;&#x0647;&#x062C;&#x0631;&#x064A;</div>
+    <div class="t-card">
+      <div class="t-card-top"><span class="t-card-name">Hijri</span><span class="t-card-n">3</span></div>
+      <div class="t-card-ar">التقويم الهجري</div>
     </div>
-    <div class="tool-card">
-      <div class="tool-card-header">
-        <span class="tool-card-name">Translation</span>
-        <span class="tool-card-count">3</span>
-      </div>
-      <div class="tool-card-ar">&#x0627;&#x0644;&#x062A;&#x0631;&#x062C;&#x0645;&#x0629; &#x0648;&#x0627;&#x0644;&#x0644;&#x0647;&#x062C;&#x0627;&#x062A;</div>
+    <div class="t-card">
+      <div class="t-card-top"><span class="t-card-name">Translation</span><span class="t-card-n">3</span></div>
+      <div class="t-card-ar">الترجمة واللهجات</div>
     </div>
-    <div class="tool-card">
-      <div class="tool-card-header">
-        <span class="tool-card-name">Zakat</span>
-        <span class="tool-card-count">2</span>
-      </div>
-      <div class="tool-card-ar">&#x0627;&#x0644;&#x0632;&#x0643;&#x0627;&#x0629; &#x0648;&#x0627;&#x0644;&#x062A;&#x0645;&#x0648;&#x064A;&#x0644;</div>
+    <div class="t-card">
+      <div class="t-card-top"><span class="t-card-name">Zakat</span><span class="t-card-n">2</span></div>
+      <div class="t-card-ar">الزكاة والتمويل</div>
     </div>
-    <div class="tool-card">
-      <div class="tool-card-header">
-        <span class="tool-card-name">Weather</span>
-        <span class="tool-card-count">2</span>
-      </div>
-      <div class="tool-card-ar">&#x0627;&#x0644;&#x0637;&#x0642;&#x0633;</div>
+    <div class="t-card">
+      <div class="t-card-top"><span class="t-card-name">Weather</span><span class="t-card-n">2</span></div>
+      <div class="t-card-ar">الطقس</div>
     </div>
-    <div class="tool-card">
-      <div class="tool-card-header">
-        <span class="tool-card-name">Stocks</span>
-        <span class="tool-card-count">2</span>
-      </div>
-      <div class="tool-card-ar">&#x0627;&#x0644;&#x0623;&#x0633;&#x0647;&#x0645;</div>
+    <div class="t-card">
+      <div class="t-card-top"><span class="t-card-name">Stocks</span><span class="t-card-n">2</span></div>
+      <div class="t-card-ar">الأسهم</div>
     </div>
-    <div class="tool-card">
-      <div class="tool-card-header">
-        <span class="tool-card-name">NLP</span>
-        <span class="tool-card-count">4</span>
-      </div>
-      <div class="tool-card-ar">&#x0645;&#x0639;&#x0627;&#x0644;&#x062C;&#x0629; &#x0627;&#x0644;&#x0644;&#x063A;&#x0629;</div>
+    <div class="t-card">
+      <div class="t-card-top"><span class="t-card-name">NLP</span><span class="t-card-n">4</span></div>
+      <div class="t-card-ar">معالجة اللغة</div>
     </div>
-    <div class="tool-card">
-      <div class="tool-card-header">
-        <span class="tool-card-name">News</span>
-        <span class="tool-card-count">1</span>
-      </div>
-      <div class="tool-card-ar">&#x0627;&#x0644;&#x0623;&#x062E;&#x0628;&#x0627;&#x0631;</div>
+    <div class="t-card">
+      <div class="t-card-top"><span class="t-card-name">News</span><span class="t-card-n">1</span></div>
+      <div class="t-card-ar">الأخبار</div>
     </div>
-    <div class="tool-card">
-      <div class="tool-card-header">
-        <span class="tool-card-name">Currency</span>
-        <span class="tool-card-count">2</span>
-      </div>
-      <div class="tool-card-ar">&#x0627;&#x0644;&#x0639;&#x0645;&#x0644;&#x0627;&#x062A;</div>
+    <div class="t-card">
+      <div class="t-card-top"><span class="t-card-name">Currency</span><span class="t-card-n">2</span></div>
+      <div class="t-card-ar">العملات</div>
     </div>
-    <div class="tool-card">
-      <div class="tool-card-header">
-        <span class="tool-card-name">Names</span>
-        <span class="tool-card-count">2</span>
-      </div>
-      <div class="tool-card-ar">&#x0627;&#x0644;&#x0623;&#x0633;&#x0645;&#x0627;&#x0621;</div>
+    <div class="t-card">
+      <div class="t-card-top"><span class="t-card-name">Names</span><span class="t-card-n">2</span></div>
+      <div class="t-card-ar">الأسماء</div>
     </div>
   </div>
 </div>
 </section>
 
 <!-- HOW IT WORKS -->
-<section class="how">
-<div class="container">
-  <span class="section-label">Setup</span>
-  <h2 class="section-title">Three commands. That is it.</h2>
+<section>
+<div class="wrap">
+  <span class="label">Setup</span>
+  <h2 class="title">Three commands. Done.</h2>
   <div class="steps">
     <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-content">
-        <div class="step-label">Install</div>
-        <div class="step-code"><code>pip install wasl-mcp</code></div>
+      <div class="step-n">1</div>
+      <div class="step-body">
+        <div class="step-h">Install</div>
+        <div class="step-cmd"><code><span class="prompt">$ </span>pip install wasl-mcp</code></div>
       </div>
     </div>
     <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-content">
-        <div class="step-label">Register</div>
-        <div class="step-code"><code>claude mcp add wasl</code></div>
+      <div class="step-n">2</div>
+      <div class="step-body">
+        <div class="step-h">Register</div>
+        <div class="step-cmd"><code><span class="prompt">$ </span>claude mcp add wasl</code></div>
       </div>
     </div>
     <div class="step">
-      <div class="step-num">3</div>
-      <div class="step-content">
-        <div class="step-label">Use</div>
-        <div class="step-desc">Ask in Arabic -- tools respond automatically. Prayer times, Quran search, currency conversion, dialect detection, and 30 more tools are available instantly.</div>
+      <div class="step-n">3</div>
+      <div class="step-body">
+        <div class="step-h">Use</div>
+        <p class="step-p">Ask in Arabic. Tools respond automatically. Prayer times, Quran search, currency conversion, dialect detection, and 30 more tools available instantly.</p>
       </div>
     </div>
   </div>
@@ -275,75 +243,75 @@ footer{border-top:1px solid var(--border);padding:48px 0;text-align:center}
 </section>
 
 <!-- COMPATIBILITY -->
-<section class="compat">
-<div class="container">
-  <span class="section-label">Compatibility</span>
-  <h2 class="section-title">Works everywhere MCP does</h2>
-  <p class="section-desc">Standard MCP protocol. No vendor lock-in. Any client that speaks MCP can use all 34 tools.</p>
+<section>
+<div class="wrap">
+  <span class="label">Compatibility</span>
+  <h2 class="title">Works everywhere MCP does</h2>
+  <p class="desc">Standard MCP protocol. No vendor lock-in.</p>
   <div class="compat-grid">
     <div class="compat-item">
       <span class="compat-name">Claude Code</span>
-      <span class="compat-check">&#x2713;</span>
+      <span class="compat-ok">&#x2713;</span>
     </div>
     <div class="compat-item">
       <span class="compat-name">Goose</span>
-      <span class="compat-check">&#x2713;</span>
+      <span class="compat-ok">&#x2713;</span>
     </div>
     <div class="compat-item">
       <span class="compat-name">Cursor</span>
-      <span class="compat-check">&#x2713;</span>
+      <span class="compat-ok">&#x2713;</span>
     </div>
     <div class="compat-item">
       <span class="compat-name">Windsurf</span>
-      <span class="compat-check">&#x2713;</span>
+      <span class="compat-ok">&#x2713;</span>
     </div>
     <div class="compat-item">
       <span class="compat-name">IntelliJ</span>
-      <span class="compat-check">&#x2713;</span>
+      <span class="compat-ok">&#x2713;</span>
     </div>
   </div>
 </div>
 </section>
 
 <!-- DIALECT SUPPORT -->
-<section class="dialects">
-<div class="container">
-  <span class="section-label">Dialects</span>
-  <h2 class="section-title">Five dialects. One server.</h2>
-  <p class="section-desc">Every language tool handles Gulf, Egyptian, Levantine, Maghrebi, and MSA natively. Dialect detection is built in.</p>
-  <table class="dialect-table">
+<section>
+<div class="wrap">
+  <span class="label">Dialects</span>
+  <h2 class="title">Five dialects. One server.</h2>
+  <p class="desc">Every language tool handles Gulf, Egyptian, Levantine, Maghrebi, and MSA natively.</p>
+  <table class="d-table">
     <thead>
       <tr>
         <th>Dialect</th>
         <th>Code</th>
-        <th class="ar-cell">Example</th>
+        <th class="ar">Example</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td>Gulf</td>
         <td><code>gulf</code></td>
-        <td class="ar-cell">&#x0627;&#x0628;&#x064A; &#x0627;&#x062D;&#x062C;&#x0632; &#x0641;&#x0646;&#x062F;&#x0642;</td>
+        <td class="ar">ابي احجز فندق</td>
       </tr>
       <tr>
         <td>Egyptian</td>
         <td><code>egyptian</code></td>
-        <td class="ar-cell">&#x0639;&#x0627;&#x064A;&#x0632; &#x0627;&#x062D;&#x062C;&#x0632; &#x0641;&#x0646;&#x062F;&#x0642;</td>
+        <td class="ar">عايز احجز فندق</td>
       </tr>
       <tr>
         <td>Levantine</td>
         <td><code>levantine</code></td>
-        <td class="ar-cell">&#x0628;&#x062F;&#x064A; &#x0627;&#x062D;&#x062C;&#x0632; &#x0641;&#x0646;&#x062F;&#x0642;</td>
+        <td class="ar">بدي احجز فندق</td>
       </tr>
       <tr>
         <td>Maghrebi</td>
         <td><code>maghrebi</code></td>
-        <td class="ar-cell">&#x0628;&#x063A;&#x064A;&#x062A; &#x0646;&#x062D;&#x062C;&#x0632; &#x0641;&#x0646;&#x062F;&#x0642;</td>
+        <td class="ar">بغيت نحجز فندق</td>
       </tr>
       <tr>
         <td>MSA</td>
         <td><code>msa</code></td>
-        <td class="ar-cell">&#x0623;&#x0631;&#x064A;&#x062F; &#x062D;&#x062C;&#x0632; &#x0641;&#x0646;&#x062F;&#x0642;</td>
+        <td class="ar">أريد حجز فندق</td>
       </tr>
     </tbody>
   </table>
@@ -351,45 +319,45 @@ footer{border-top:1px solid var(--border);padding:48px 0;text-align:center}
 </section>
 
 <!-- ECOSYSTEM -->
-<section class="ecosystem">
-<div class="container">
-  <span class="section-label">Ecosystem</span>
-  <h2 class="section-title">Three platforms. Arabic-first.</h2>
+<section>
+<div class="wrap">
+  <span class="label">Ecosystem</span>
+  <h2 class="title">Three platforms. Arabic-first.</h2>
   <div class="eco-grid">
     <div class="eco-card">
-      <div class="eco-card-ar">&#x0645;&#x062E;&#x0644;&#x0628;</div>
-      <div class="eco-card-en">Mkhlab</div>
-      <div class="eco-card-platform">OpenClaw plugin</div>
-      <div class="eco-card-stat">60 Arabic skills</div>
+      <div class="eco-ar">مخلب</div>
+      <div class="eco-en">Mkhlab / OpenClaw</div>
+      <div class="eco-plat">OpenClaw plugin</div>
+      <div class="eco-stat">60 Arabic skills</div>
     </div>
     <div class="eco-card">
-      <div class="eco-card-ar">&#x0647;&#x0631;&#x0645;&#x0632;</div>
-      <div class="eco-card-en">Hurmoz</div>
-      <div class="eco-card-platform">Hermes agent</div>
-      <div class="eco-card-stat">63 Arabic skills</div>
+      <div class="eco-ar">هرمز</div>
+      <div class="eco-en">Hurmoz / Hermes</div>
+      <div class="eco-plat">Hermes agent</div>
+      <div class="eco-stat">63 Arabic skills</div>
     </div>
     <div class="eco-card">
-      <div class="eco-card-ar">&#x0648;&#x0635;&#x0644;</div>
-      <div class="eco-card-en">Wasl</div>
-      <div class="eco-card-platform">MCP everywhere</div>
-      <div class="eco-card-stat">34 Arabic tools</div>
+      <div class="eco-ar">وصل</div>
+      <div class="eco-en">Wasl / MCP</div>
+      <div class="eco-plat">MCP everywhere</div>
+      <div class="eco-stat">34 Arabic tools</div>
     </div>
   </div>
-  <p class="eco-footer">Same builder. Three platforms. Arabic-first.</p>
+  <p class="eco-note">Same builder. Three platforms. Arabic-first.</p>
 </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-<div class="container">
-  <p class="footer-line">MIT License</p>
-  <p class="footer-line">Built by Musa the Carpenter</p>
-  <div class="footer-links">
+<div class="wrap">
+  <p>MIT License</p>
+  <p>Built by Musa the Carpenter</p>
+  <div class="f-links">
     <a href="https://github.com/Moshe-ship/wasl">GitHub</a>
     <a href="https://x.com/Mosescreates">@Mosescreates</a>
     <a href="https://pypi.org/project/wasl-mcp/">PyPI</a>
   </div>
-  <p class="footer-line" style="margin-top:20px">Built with input from the Saudi AI Community.</p>
+  <p style="margin-top:16px">Built with input from the Saudi AI Community.</p>
 </div>
 </footer>
 
