@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wasl -- The first comprehensive Arabic MCP server</title>
+<meta name="description" content="34 Arabic tools across 12 categories. Works with Claude Code, Goose, Cursor, Windsurf, and any MCP client.">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0a;--fg:#e5e5e5;--fg-dim:#a3a3a3;--fg-muted:#737373;--accent:#22c55e;--surface:#141414;--border:#262626;--radius:6px}
+html{font-size:16px;scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+code,pre,.mono{font-family:"SF Mono","Cascadia Code","Fira Code",Consolas,"Liberation Mono",Menlo,monospace}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Layout */
+.container{max-width:960px;margin:0 auto;padding:0 24px}
+section{padding:96px 0}
+@media(max-width:640px){section{padding:64px 0}}
+
+/* Section headings */
+.section-label{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;font-weight:600}
+.section-title{font-size:1.75rem;font-weight:700;margin-bottom:16px;line-height:1.25}
+.section-desc{color:var(--fg-dim);max-width:640px;font-size:1.05rem;line-height:1.7}
+
+/* ===== HERO ===== */
+.hero{padding:120px 0 96px;text-align:center;border-bottom:1px solid var(--border)}
+.hero-ar{font-size:clamp(4rem,12vw,8rem);font-weight:800;letter-spacing:-.02em;line-height:1;margin-bottom:8px;direction:rtl}
+.hero-subtitle{font-size:clamp(1rem,2.5vw,1.25rem);color:var(--fg-dim);margin-bottom:8px}
+.hero-tagline{font-size:.95rem;color:var(--fg-muted);margin-bottom:40px}
+.hero-install{display:inline-block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 32px;font-size:1rem}
+.hero-install code{color:var(--accent)}
+.hero-meta{margin-top:24px;font-size:.8rem;color:var(--fg-muted)}
+
+/* ===== THE GAP ===== */
+.gap{border-bottom:1px solid var(--border)}
+.gap-number{font-size:clamp(2.5rem,6vw,4rem);font-weight:800;color:var(--accent);line-height:1}
+.gap-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px;margin-top:48px}
+.gap-stat{border-left:2px solid var(--border);padding-left:20px}
+.gap-stat-label{font-size:.85rem;color:var(--fg-muted);margin-top:4px}
+
+/* ===== TOOLS GRID ===== */
+.tools{border-bottom:1px solid var(--border)}
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-top:40px}
+.tool-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.tool-card-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.tool-card-name{font-weight:600;font-size:.95rem}
+.tool-card-count{font-size:.75rem;color:var(--accent);font-weight:600;background:rgba(34,197,94,.1);padding:2px 8px;border-radius:3px}
+.tool-card-ar{font-size:.85rem;color:var(--fg-muted);direction:rtl}
+
+/* ===== HOW IT WORKS ===== */
+.how{border-bottom:1px solid var(--border)}
+.steps{margin-top:40px;display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:20px;align-items:flex-start;padding:20px 0;border-top:1px solid var(--border)}
+.step-num{font-size:.75rem;font-weight:700;color:var(--accent);background:rgba(34,197,94,.1);width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0;margin-top:2px}
+.step-content{flex:1}
+.step-code{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;margin-top:8px;font-size:.9rem;overflow-x:auto}
+.step-label{font-weight:600;font-size:.95rem}
+.step-desc{font-size:.85rem;color:var(--fg-dim);margin-top:4px}
+
+/* ===== COMPATIBILITY ===== */
+.compat{border-bottom:1px solid var(--border)}
+.compat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:40px}
+.compat-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.compat-name{font-weight:500;font-size:.9rem}
+.compat-check{color:var(--accent);font-weight:700;font-size:1.1rem}
+
+/* ===== DIALECTS ===== */
+.dialects{border-bottom:1px solid var(--border)}
+.dialect-table{width:100%;margin-top:40px;border-collapse:collapse}
+.dialect-table th{text-align:left;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-muted);padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600}
+.dialect-table td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:.95rem}
+.dialect-table .ar-cell{direction:rtl;text-align:right;font-size:1.05rem}
+.dialect-table tr:last-child td{border-bottom:none}
+
+/* ===== ECOSYSTEM ===== */
+.ecosystem{border-bottom:1px solid var(--border)}
+.eco-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:40px}
+.eco-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px}
+.eco-card-ar{font-size:1.4rem;font-weight:700;direction:rtl;margin-bottom:4px}
+.eco-card-en{font-size:.85rem;color:var(--fg-dim);margin-bottom:12px}
+.eco-card-platform{font-size:.8rem;color:var(--fg-muted)}
+.eco-card-stat{font-size:.9rem;color:var(--accent);font-weight:600;margin-top:8px}
+.eco-footer{margin-top:32px;text-align:center;font-size:.95rem;color:var(--fg-dim)}
+
+/* ===== FOOTER ===== */
+footer{border-top:1px solid var(--border);padding:48px 0;text-align:center}
+.footer-line{font-size:.85rem;color:var(--fg-muted);margin-bottom:8px}
+.footer-links{display:flex;gap:24px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.footer-links a{font-size:.85rem;color:var(--fg-dim)}
+.footer-links a:hover{color:var(--accent)}
+
+/* Responsive */
+@media(max-width:640px){
+  .container{padding:0 16px}
+  .tools-grid{grid-template-columns:1fr 1fr}
+  .compat-grid{grid-template-columns:1fr 1fr}
+  .eco-grid{grid-template-columns:1fr}
+  .gap-stats{grid-template-columns:1fr}
+  .dialect-table{font-size:.85rem}
+  .dialect-table th,.dialect-table td{padding:10px 12px}
+}
+@media(max-width:380px){
+  .tools-grid{grid-template-columns:1fr}
+  .compat-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+<div class="container">
+  <div class="hero-ar">&#x0648;&#x0635;&#x0644;</div>
+  <p class="hero-subtitle">The first comprehensive Arabic MCP server</p>
+  <p class="hero-tagline">One server. 34 Arabic tools. Every MCP client.</p>
+  <div class="hero-install">
+    <code>pip install wasl-mcp</code>
+  </div>
+  <p class="hero-meta">MIT License / Python 3.10+ / v0.3</p>
+</div>
+</section>
+
+<!-- THE GAP -->
+<section class="gap">
+<div class="container">
+  <span class="section-label">The gap</span>
+  <h2 class="section-title">330 million Arabic speakers.<br>Zero comprehensive Arabic MCP servers.<br>Until now.</h2>
+  <div class="gap-stats">
+    <div class="gap-stat">
+      <div class="gap-number">330M</div>
+      <div class="gap-stat-label">Arabic speakers worldwide</div>
+    </div>
+    <div class="gap-stat">
+      <div class="gap-number">0</div>
+      <div class="gap-stat-label">Comprehensive Arabic MCP servers before Wasl</div>
+    </div>
+    <div class="gap-stat">
+      <div class="gap-number">34</div>
+      <div class="gap-stat-label">Tools across 12 categories, all free APIs</div>
+    </div>
+    <div class="gap-stat">
+      <div class="gap-number">5</div>
+      <div class="gap-stat-label">Arabic dialects supported natively</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- TOOLS -->
+<section class="tools">
+<div class="container">
+  <span class="section-label">Tools</span>
+  <h2 class="section-title">34 tools across 12 categories</h2>
+  <p class="section-desc">All free APIs. No paid keys required for most tools. Arabic-first design.</p>
+  <div class="tools-grid">
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-card-name">Prayer</span>
+        <span class="tool-card-count">2</span>
+      </div>
+      <div class="tool-card-ar">&#x0623;&#x0648;&#x0642;&#x0627;&#x062A; &#x0627;&#x0644;&#x0635;&#x0644;&#x0627;&#x0629;</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-card-name">Quran</span>
+        <span class="tool-card-count">3</span>
+      </div>
+      <div class="tool-card-ar">&#x0627;&#x0644;&#x0642;&#x0631;&#x0622;&#x0646;</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-card-name">Hadith</span>
+        <span class="tool-card-count">2</span>
+      </div>
+      <div class="tool-card-ar">&#x0627;&#x0644;&#x062D;&#x062F;&#x064A;&#x062B;</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-card-name">Hijri</span>
+        <span class="tool-card-count">3</span>
+      </div>
+      <div class="tool-card-ar">&#x0627;&#x0644;&#x062A;&#x0642;&#x0648;&#x064A;&#x0645; &#x0627;&#x0644;&#x0647;&#x062C;&#x0631;&#x064A;</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-card-name">Translation</span>
+        <span class="tool-card-count">3</span>
+      </div>
+      <div class="tool-card-ar">&#x0627;&#x0644;&#x062A;&#x0631;&#x062C;&#x0645;&#x0629; &#x0648;&#x0627;&#x0644;&#x0644;&#x0647;&#x062C;&#x0627;&#x062A;</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-card-name">Zakat</span>
+        <span class="tool-card-count">2</span>
+      </div>
+      <div class="tool-card-ar">&#x0627;&#x0644;&#x0632;&#x0643;&#x0627;&#x0629; &#x0648;&#x0627;&#x0644;&#x062A;&#x0645;&#x0648;&#x064A;&#x0644;</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-card-name">Weather</span>
+        <span class="tool-card-count">2</span>
+      </div>
+      <div class="tool-card-ar">&#x0627;&#x0644;&#x0637;&#x0642;&#x0633;</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-card-name">Stocks</span>
+        <span class="tool-card-count">2</span>
+      </div>
+      <div class="tool-card-ar">&#x0627;&#x0644;&#x0623;&#x0633;&#x0647;&#x0645;</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-card-name">NLP</span>
+        <span class="tool-card-count">4</span>
+      </div>
+      <div class="tool-card-ar">&#x0645;&#x0639;&#x0627;&#x0644;&#x062C;&#x0629; &#x0627;&#x0644;&#x0644;&#x063A;&#x0629;</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-card-name">News</span>
+        <span class="tool-card-count">1</span>
+      </div>
+      <div class="tool-card-ar">&#x0627;&#x0644;&#x0623;&#x062E;&#x0628;&#x0627;&#x0631;</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-card-name">Currency</span>
+        <span class="tool-card-count">2</span>
+      </div>
+      <div class="tool-card-ar">&#x0627;&#x0644;&#x0639;&#x0645;&#x0644;&#x0627;&#x062A;</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-card-header">
+        <span class="tool-card-name">Names</span>
+        <span class="tool-card-count">2</span>
+      </div>
+      <div class="tool-card-ar">&#x0627;&#x0644;&#x0623;&#x0633;&#x0645;&#x0627;&#x0621;</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+<div class="container">
+  <span class="section-label">Setup</span>
+  <h2 class="section-title">Three commands. That is it.</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-label">Install</div>
+        <div class="step-code"><code>pip install wasl-mcp</code></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-label">Register</div>
+        <div class="step-code"><code>claude mcp add wasl</code></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-label">Use</div>
+        <div class="step-desc">Ask in Arabic -- tools respond automatically. Prayer times, Quran search, currency conversion, dialect detection, and 30 more tools are available instantly.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- COMPATIBILITY -->
+<section class="compat">
+<div class="container">
+  <span class="section-label">Compatibility</span>
+  <h2 class="section-title">Works everywhere MCP does</h2>
+  <p class="section-desc">Standard MCP protocol. No vendor lock-in. Any client that speaks MCP can use all 34 tools.</p>
+  <div class="compat-grid">
+    <div class="compat-item">
+      <span class="compat-name">Claude Code</span>
+      <span class="compat-check">&#x2713;</span>
+    </div>
+    <div class="compat-item">
+      <span class="compat-name">Goose</span>
+      <span class="compat-check">&#x2713;</span>
+    </div>
+    <div class="compat-item">
+      <span class="compat-name">Cursor</span>
+      <span class="compat-check">&#x2713;</span>
+    </div>
+    <div class="compat-item">
+      <span class="compat-name">Windsurf</span>
+      <span class="compat-check">&#x2713;</span>
+    </div>
+    <div class="compat-item">
+      <span class="compat-name">IntelliJ</span>
+      <span class="compat-check">&#x2713;</span>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- DIALECT SUPPORT -->
+<section class="dialects">
+<div class="container">
+  <span class="section-label">Dialects</span>
+  <h2 class="section-title">Five dialects. One server.</h2>
+  <p class="section-desc">Every language tool handles Gulf, Egyptian, Levantine, Maghrebi, and MSA natively. Dialect detection is built in.</p>
+  <table class="dialect-table">
+    <thead>
+      <tr>
+        <th>Dialect</th>
+        <th>Code</th>
+        <th class="ar-cell">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Gulf</td>
+        <td><code>gulf</code></td>
+        <td class="ar-cell">&#x0627;&#x0628;&#x064A; &#x0627;&#x062D;&#x062C;&#x0632; &#x0641;&#x0646;&#x062F;&#x0642;</td>
+      </tr>
+      <tr>
+        <td>Egyptian</td>
+        <td><code>egyptian</code></td>
+        <td class="ar-cell">&#x0639;&#x0627;&#x064A;&#x0632; &#x0627;&#x062D;&#x062C;&#x0632; &#x0641;&#x0646;&#x062F;&#x0642;</td>
+      </tr>
+      <tr>
+        <td>Levantine</td>
+        <td><code>levantine</code></td>
+        <td class="ar-cell">&#x0628;&#x062F;&#x064A; &#x0627;&#x062D;&#x062C;&#x0632; &#x0641;&#x0646;&#x062F;&#x0642;</td>
+      </tr>
+      <tr>
+        <td>Maghrebi</td>
+        <td><code>maghrebi</code></td>
+        <td class="ar-cell">&#x0628;&#x063A;&#x064A;&#x062A; &#x0646;&#x062D;&#x062C;&#x0632; &#x0641;&#x0646;&#x062F;&#x0642;</td>
+      </tr>
+      <tr>
+        <td>MSA</td>
+        <td><code>msa</code></td>
+        <td class="ar-cell">&#x0623;&#x0631;&#x064A;&#x062F; &#x062D;&#x062C;&#x0632; &#x0641;&#x0646;&#x062F;&#x0642;</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</section>
+
+<!-- ECOSYSTEM -->
+<section class="ecosystem">
+<div class="container">
+  <span class="section-label">Ecosystem</span>
+  <h2 class="section-title">Three platforms. Arabic-first.</h2>
+  <div class="eco-grid">
+    <div class="eco-card">
+      <div class="eco-card-ar">&#x0645;&#x062E;&#x0644;&#x0628;</div>
+      <div class="eco-card-en">Mkhlab</div>
+      <div class="eco-card-platform">OpenClaw plugin</div>
+      <div class="eco-card-stat">60 Arabic skills</div>
+    </div>
+    <div class="eco-card">
+      <div class="eco-card-ar">&#x0647;&#x0631;&#x0645;&#x0632;</div>
+      <div class="eco-card-en">Hurmoz</div>
+      <div class="eco-card-platform">Hermes agent</div>
+      <div class="eco-card-stat">63 Arabic skills</div>
+    </div>
+    <div class="eco-card">
+      <div class="eco-card-ar">&#x0648;&#x0635;&#x0644;</div>
+      <div class="eco-card-en">Wasl</div>
+      <div class="eco-card-platform">MCP everywhere</div>
+      <div class="eco-card-stat">34 Arabic tools</div>
+    </div>
+  </div>
+  <p class="eco-footer">Same builder. Three platforms. Arabic-first.</p>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+<div class="container">
+  <p class="footer-line">MIT License</p>
+  <p class="footer-line">Built by Musa the Carpenter</p>
+  <div class="footer-links">
+    <a href="https://github.com/Moshe-ship/wasl">GitHub</a>
+    <a href="https://x.com/Mosescreates">@Mosescreates</a>
+    <a href="https://pypi.org/project/wasl-mcp/">PyPI</a>
+  </div>
+  <p class="footer-line" style="margin-top:20px">Built with input from the Saudi AI Community.</p>
+</div>
+</footer>
+
+</body>
+</html>
