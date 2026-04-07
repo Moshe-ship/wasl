@@ -1,0 +1,24 @@
+[project]
+name = "wasl-mcp"
+version = "0.1.0"
+description = "The first comprehensive Arabic MCP server — prayer times, Quran, Hadith, translation, dialect detection, zakat, weather, stocks, NLP, and more"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Musa the Carpenter" }]
+keywords = ["arabic", "mcp", "model-context-protocol", "islamic", "quran", "nlp", "agent"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Linguistic",
+]
+dependencies = [
+    "fastmcp>=2.0.0",
+    "httpx>=0.24.0",
+]
+
+[project.scripts]
+wasl = "src.server:main"
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"

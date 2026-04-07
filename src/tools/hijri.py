@@ -1,0 +1,75 @@
+"""Hijri calendar tools — Aladhan API (free, no key)."""
+
+from __future__ import annotations
+
+import httpx
+from fastmcp import FastMCP
+
+API = "https://api.aladhan.com/v1"
+
+ISLAMIC_EVENTS = [
+    ("1", "محرم", "رأس السنة الهجرية"),
+    ("10", "محرم", "يوم عاشوراء"),
+    ("12", "ربيع الأول", "المولد النبوي"),
+    ("27", "رجب", "ليلة الإسراء والمعراج"),
+    ("15", "شعبان", "ليلة النصف من شعبان"),
+    ("1", "رمضان", "بداية شهر رمضان"),
+    ("27", "رمضان", "ليلة القدر (المرجحة)"),
+    ("1", "شوال", "عيد الفطر"),
+    ("9", "ذو الحجة", "يوم عرفة"),
+    ("10", "ذو الحجة", "عيد الأضحى"),
+]
+
+
+def register_hijri_tools(mcp: FastMCP) -> None:
+
+    @mcp.tool()
+    async def hijri_today() -> str:
+        """Get today's Hijri date."""
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{API}/gToH")
+            data = resp.json()
+
+        if data.get("code") != 200:
+            return "خطأ: لم أتمكن من جلب التاريخ الهجري"
+
+        h = data["data"]["hijri"]
+        g = data["data"]["gregorian"]
+        return (
+            f"اليوم: {h['day']} {h['month']['ar']} {h['year']} هـ\n"
+            f"الموافق: {g['date']}\n"
+            f"اليوم: {h['weekday']['ar']}"
+        )
+
+    @mcp.tool()
+    async def convert_date(
+        date: str,
+        direction: str = "g_to_h",
+    ) -> str:
+        """Convert between Gregorian and Hijri dates.
+
+        direction: 'g_to_h' (Gregorian to Hijri) or 'h_to_g' (Hijri to Gregorian).
+        date format: DD-MM-YYYY
+        """
+        endpoint = "gToH" if direction == "g_to_h" else "hToG"
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{API}/{endpoint}/{date}")
+            data = resp.json()
+
+        if data.get("code") != 200:
+            return f"خطأ: لم أتمكن من تحويل التاريخ {date}"
+
+        h = data["data"]["hijri"]
+        g = data["data"]["gregorian"]
+        return (
+            f"هجري: {h['day']} {h['month']['ar']} {h['year']} هـ\n"
+            f"ميلادي: {g['date']}"
+        )
+
+    @mcp.tool()
+    async def islamic_events() -> str:
+        """List major Islamic events with their Hijri dates."""
+        result = "المناسبات الإسلامية:\n\n"
+        for day, month, event in ISLAMIC_EVENTS:
+            result += f"  {day} {month} — {event}\n"
+        return result
