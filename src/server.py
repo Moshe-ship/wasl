@@ -17,6 +17,8 @@ from src.tools.weather import register_weather_tools
 from src.tools.stocks import register_stocks_tools
 from src.tools.nlp import register_nlp_tools
 from src.tools.news import register_news_tools
+from src.tools.currency import register_currency_tools
+from src.tools.names import register_names_tools
 
 mcp = FastMCP(
     "wasl",
@@ -40,6 +42,8 @@ register_weather_tools(mcp)
 register_stocks_tools(mcp)
 register_nlp_tools(mcp)
 register_news_tools(mcp)
+register_currency_tools(mcp)
+register_names_tools(mcp)
 
 
 def main() -> None:

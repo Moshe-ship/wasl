@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import httpx
+from src.http import client
 from fastmcp import FastMCP
 
 API = "https://api.aladhan.com/v1"
@@ -28,30 +28,33 @@ def register_prayer_tools(mcp: FastMCP) -> None:
 
         Methods: 1=Karachi, 2=ISNA, 3=MWL, 4=Umm al-Qura, 5=Egyptian
         """
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(
-                f"{API}/timingsByCity",
-                params={"city": city, "country": country, "method": method},
-            )
-            data = resp.json()
+        try:
+            async with client() as c:
+                resp = await c.get(
+                    f"{API}/timingsByCity",
+                    params={"city": city, "country": country, "method": method},
+                )
+                data = resp.json()
 
-        if data.get("code") != 200:
-            return f"خطأ: لم أتمكن من جلب أوقات الصلاة لـ {city}"
+            if data.get("code") != 200:
+                return f"خطأ: لم أتمكن من جلب أوقات الصلاة لـ {city}"
 
-        timings = data["data"]["timings"]
-        date = data["data"]["date"]
-        hijri = date["hijri"]
-        gregorian = date["gregorian"]["date"]
+            timings = data["data"]["timings"]
+            date = data["data"]["date"]
+            hijri = date["hijri"]
+            gregorian = date["gregorian"]["date"]
 
-        result = f"أوقات الصلاة — {city}\n"
-        result += f"{hijri['day']} {hijri['month']['ar']} {hijri['year']} هـ | {gregorian}\n\n"
-        result += f"الفجر: {timings['Fajr']}\n"
-        result += f"الشروق: {timings['Sunrise']}\n"
-        result += f"الظهر: {timings['Dhuhr']}\n"
-        result += f"العصر: {timings['Asr']}\n"
-        result += f"المغرب: {timings['Maghrib']}\n"
-        result += f"العشاء: {timings['Isha']}\n"
-        return result
+            result = f"أوقات الصلاة — {city}\n"
+            result += f"{hijri['day']} {hijri['month']['ar']} {hijri['year']} هـ | {gregorian}\n\n"
+            result += f"الفجر: {timings['Fajr']}\n"
+            result += f"الشروق: {timings['Sunrise']}\n"
+            result += f"الظهر: {timings['Dhuhr']}\n"
+            result += f"العصر: {timings['Asr']}\n"
+            result += f"المغرب: {timings['Maghrib']}\n"
+            result += f"العشاء: {timings['Isha']}\n"
+            return result
+        except Exception as e:
+            return f"خطأ: {type(e).__name__}"
 
     @mcp.tool()
     async def get_qibla_direction(
@@ -59,12 +62,15 @@ def register_prayer_tools(mcp: FastMCP) -> None:
         longitude: float,
     ) -> str:
         """Get qibla direction from coordinates."""
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(f"{API}/qibla/{latitude}/{longitude}")
-            data = resp.json()
+        try:
+            async with client() as c:
+                resp = await c.get(f"{API}/qibla/{latitude}/{longitude}")
+                data = resp.json()
 
-        if data.get("code") != 200:
-            return "خطأ: لم أتمكن من حساب اتجاه القبلة"
+            if data.get("code") != 200:
+                return "خطأ: لم أتمكن من حساب اتجاه القبلة"
 
-        direction = data["data"]["direction"]
-        return f"اتجاه القبلة: {direction:.2f} درجة من الشمال"
+            direction = data["data"]["direction"]
+            return f"اتجاه القبلة: {direction:.2f} درجة من الشمال"
+        except Exception as e:
+            return f"خطأ: {type(e).__name__}"

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import httpx
+from src.http import client
 from fastmcp import FastMCP
 
 NISAB_GOLD_GRAMS = 85
@@ -44,8 +44,8 @@ def register_zakat_tools(mcp: FastMCP) -> None:
     async def get_gold_price() -> str:
         """Get current gold price for nisab calculation."""
         try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.get(
+            async with client() as c:
+                resp = await c.get(
                     "https://api.gold-api.com/price/XAU",
                     timeout=10.0,
                 )

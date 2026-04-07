@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 
-import httpx
+from src.http import client
 from fastmcp import FastMCP
 
 API = "https://api.twelvedata.com"
@@ -38,29 +38,32 @@ def register_stocks_tools(mcp: FastMCP) -> None:
         if not ticker.endswith(".SAU") and not "." in ticker:
             ticker = f"{ticker}.SAU"
 
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(
-                f"{API}/quote",
-                params={"symbol": ticker, "apikey": api_key},
+        try:
+            async with client() as c:
+                resp = await c.get(
+                    f"{API}/quote",
+                    params={"symbol": ticker, "apikey": api_key},
+                )
+                data = resp.json()
+
+            if "code" in data and data["code"] != 200:
+                return f"خطأ: لم أتمكن من جلب سعر {symbol}. تأكد من رمز السهم."
+
+            name = data.get("name", symbol)
+            price = data.get("close", "?")
+            change = data.get("change", "?")
+            pct = data.get("percent_change", "?")
+            volume = data.get("volume", "?")
+
+            return (
+                f"سهم {name} ({ticker})\n\n"
+                f"السعر: {price} ر.س\n"
+                f"التغير: {change} ({pct}%)\n"
+                f"الحجم: {volume}\n\n"
+                f"تنبيه: هذا ليس نصيحة استثمارية."
             )
-            data = resp.json()
-
-        if "code" in data and data["code"] != 200:
-            return f"خطأ: لم أتمكن من جلب سعر {symbol}. تأكد من رمز السهم."
-
-        name = data.get("name", symbol)
-        price = data.get("close", "?")
-        change = data.get("change", "?")
-        pct = data.get("percent_change", "?")
-        volume = data.get("volume", "?")
-
-        return (
-            f"سهم {name} ({ticker})\n\n"
-            f"السعر: {price} ر.س\n"
-            f"التغير: {change} ({pct}%)\n"
-            f"الحجم: {volume}\n\n"
-            f"تنبيه: هذا ليس نصيحة استثمارية."
-        )
+        except Exception as e:
+            return f"خطأ: {type(e).__name__}"
 
     @mcp.tool()
     async def list_saudi_tickers() -> str:

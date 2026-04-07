@@ -85,3 +85,29 @@ def test_islamic_events():
     names = [e[2] for e in ISLAMIC_EVENTS]
     assert "عيد الفطر" in names
     assert "عيد الأضحى" in names
+
+
+def test_arab_currencies():
+    from src.tools.currency import ARAB_CURRENCIES
+    assert "SAR" in ARAB_CURRENCIES
+    assert "AED" in ARAB_CURRENCIES
+    assert ARAB_CURRENCIES["SAR"] == "ريال سعودي"
+
+
+def test_fallback_convert():
+    from src.tools.currency import _fallback_convert
+    result = _fallback_convert(100, "USD", "SAR")
+    assert "USD" in result
+
+
+def test_names_db():
+    from src.tools.names import NAMES_DB
+    assert "محمد" in NAMES_DB
+    assert NAMES_DB["محمد"]["gender"] == "ذكر"
+    assert NAMES_DB["مريم"]["quran"] is True
+    assert len(NAMES_DB) >= 20
+
+
+def test_server_imports():
+    from src.server import mcp
+    assert mcp.name == "wasl"
