@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from src.errors import api_error, safe_json
 from src.http import client
 from fastmcp import FastMCP
 
@@ -20,7 +21,10 @@ def register_quran_tools(mcp: FastMCP) -> None:
         try:
             async with client() as c:
                 resp = await c.get(f"{API}/search/{query}/all/{edition}")
-                data = resp.json()
+                data = safe_json(resp)
+
+            if data is None:
+                return api_error("parse")
 
             # AlQuran Cloud returns 404 status but includes data when results exist
             matches_data = data.get("data", {})
@@ -39,8 +43,8 @@ def register_quran_tools(mcp: FastMCP) -> None:
                 result += f"﴿{m['text']}﴾\n"
                 result += f"— {surah} : {number}\n\n"
             return result
-        except Exception as e:
-            return "خطأ: تعذر البحث في القرآن. حاول لاحقاً."
+        except Exception:
+            return api_error("connection")
 
     @mcp.tool()
     async def get_verse(
@@ -54,7 +58,10 @@ def register_quran_tools(mcp: FastMCP) -> None:
         try:
             async with client() as c:
                 resp = await c.get(f"{API}/ayah/{surah}:{ayah}/{edition}")
-                data = resp.json()
+                data = safe_json(resp)
+
+            if data is None:
+                return api_error("parse")
 
             if data.get("code") != 200:
                 return f"لم أجد الآية {surah}:{ayah}"
@@ -64,8 +71,8 @@ def register_quran_tools(mcp: FastMCP) -> None:
                 f"﴿{ayah_data['text']}﴾\n"
                 f"— {ayah_data['surah']['name']} : {ayah_data['numberInSurah']}"
             )
-        except Exception as e:
-            return "خطأ: تعذر جلب الآية. حاول لاحقاً."
+        except Exception:
+            return api_error("connection")
 
     @mcp.tool()
     async def get_surah(
@@ -78,7 +85,10 @@ def register_quran_tools(mcp: FastMCP) -> None:
         try:
             async with client() as c:
                 resp = await c.get(f"{API}/surah/{surah_number}/{edition}")
-                data = resp.json()
+                data = safe_json(resp)
+
+            if data is None:
+                return api_error("parse")
 
             if data.get("code") != 200:
                 return f"لم أجد السورة رقم {surah_number}"
@@ -92,5 +102,5 @@ def register_quran_tools(mcp: FastMCP) -> None:
             if s["numberOfAyahs"] > 5:
                 result += f"\n... و {s['numberOfAyahs'] - 5} آية أخرى"
             return result
-        except Exception as e:
-            return "خطأ: تعذر جلب السورة. حاول لاحقاً."
+        except Exception:
+            return api_error("connection")

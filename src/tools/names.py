@@ -38,24 +38,27 @@ def register_names_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def lookup_name(name: str) -> str:
         """Look up the meaning of an Arabic name."""
-        info = NAMES_DB.get(name)
-        if not info:
-            # Try partial match
-            matches = [n for n in NAMES_DB if name in n or n in name]
-            if matches:
-                info = NAMES_DB[matches[0]]
-                name = matches[0]
-            else:
-                return f"لم أجد اسم «{name}» في القاعدة. جرب اسم عربي شائع."
+        try:
+            info = NAMES_DB.get(name)
+            if not info:
+                # Try partial match
+                matches = [n for n in NAMES_DB if name in n or n in name]
+                if matches:
+                    info = NAMES_DB[matches[0]]
+                    name = matches[0]
+                else:
+                    return f"لم أجد اسم «{name}» في القاعدة. جرب اسم عربي شائع."
 
-        quran_note = "مذكور في القرآن" if info["quran"] else "غير مذكور في القرآن"
-        return (
-            f"اسم: {name}\n"
-            f"المعنى: {info['meaning']}\n"
-            f"الأصل: {info['origin']}\n"
-            f"الجنس: {info['gender']}\n"
-            f"{quran_note}"
-        )
+            quran_note = "مذكور في القرآن" if info["quran"] else "غير مذكور في القرآن"
+            return (
+                f"اسم: {name}\n"
+                f"المعنى: {info['meaning']}\n"
+                f"الأصل: {info['origin']}\n"
+                f"الجنس: {info['gender']}\n"
+                f"{quran_note}"
+            )
+        except Exception:
+            return "خطأ: تعذر البحث عن الاسم."
 
     @mcp.tool()
     async def suggest_names(
@@ -63,16 +66,21 @@ def register_names_tools(mcp: FastMCP) -> None:
         quranic_only: bool = False,
     ) -> str:
         """Suggest Arabic names. gender: 'ذكر' (male) or 'أنثى' (female)."""
-        filtered = {
-            name: info for name, info in NAMES_DB.items()
-            if info["gender"] == gender
-            and (not quranic_only or info["quran"])
-        }
+        if gender not in ("ذكر", "أنثى"):
+            return "خطأ: الجنس يجب أن يكون 'ذكر' أو 'أنثى'"
+        try:
+            filtered = {
+                name: info for name, info in NAMES_DB.items()
+                if info["gender"] == gender
+                and (not quranic_only or info["quran"])
+            }
 
-        if not filtered:
-            return f"لم أجد أسماء مطابقة للمعايير"
+            if not filtered:
+                return f"لم أجد أسماء مطابقة للمعايير"
 
-        result = f"أسماء {'قرآنية ' if quranic_only else ''}{'ذكور' if gender == 'ذكر' else 'إناث'}:\n\n"
-        for name, info in filtered.items():
-            result += f"  {name} — {info['meaning']}\n"
-        return result
+            result = f"أسماء {'قرآنية ' if quranic_only else ''}{'ذكور' if gender == 'ذكر' else 'إناث'}:\n\n"
+            for name, info in filtered.items():
+                result += f"  {name} — {info['meaning']}\n"
+            return result
+        except Exception:
+            return "خطأ: تعذر اقتراح الأسماء."

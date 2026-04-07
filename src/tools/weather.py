@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from src.errors import api_error, safe_json
 from src.http import client
 from fastmcp import FastMCP
 
@@ -21,9 +22,9 @@ WEATHER_CODES = {
 async def _geocode(c, city: str) -> tuple[float, float, str] | None:
     """Geocode a city name. Returns (lat, lon, localized_name) or None."""
     resp = await c.get(GEOCODE, params={"name": city, "count": 1, "language": "ar"})
-    if resp.status_code != 200:
+    data = safe_json(resp)
+    if data is None:
         return None
-    data = resp.json()
     results = data.get("results", [])
     if not results:
         return None
@@ -36,6 +37,8 @@ def register_weather_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def get_weather(city: str) -> str:
         """Get current weather for a city."""
+        if not city.strip():
+            return api_error("invalid_input")
         try:
             async with client() as c:
                 geo = await _geocode(c, city)
@@ -47,13 +50,9 @@ def register_weather_tools(mcp: FastMCP) -> None:
                     "latitude": lat, "longitude": lon,
                     "current_weather": "true", "timezone": "auto",
                 })
-                if resp.status_code != 200:
-                    return f"خطأ: خدمة الطقس غير متاحة حالياً (الحالة: {resp.status_code})"
-
-                try:
-                    data = resp.json()
-                except Exception:
-                    return "خطأ: خدمة الطقس أرجعت رداً غير صالح. حاول لاحقاً."
+                data = safe_json(resp)
+                if data is None:
+                    return api_error("unavailable")
 
             current = data.get("current_weather", {})
             if not current:
@@ -71,11 +70,13 @@ def register_weather_tools(mcp: FastMCP) -> None:
                 f"الرياح: {wind} كم/س"
             )
         except Exception:
-            return "خطأ: تعذر الاتصال بخدمة الطقس. حاول لاحقاً."
+            return api_error("connection")
 
     @mcp.tool()
     async def get_forecast(city: str, days: int = 3) -> str:
         """Get weather forecast for a city (1-7 days)."""
+        if not city.strip():
+            return api_error("invalid_input")
         days = min(max(days, 1), 7)
         try:
             async with client() as c:
@@ -89,13 +90,9 @@ def register_weather_tools(mcp: FastMCP) -> None:
                     "daily": "temperature_2m_max,temperature_2m_min,weathercode",
                     "timezone": "auto", "forecast_days": days,
                 })
-                if resp.status_code != 200:
-                    return f"خطأ: خدمة الطقس غير متاحة حالياً (الحالة: {resp.status_code})"
-
-                try:
-                    data = resp.json()
-                except Exception:
-                    return "خطأ: خدمة الطقس أرجعت رداً غير صالح. حاول لاحقاً."
+                data = safe_json(resp)
+                if data is None:
+                    return api_error("unavailable")
 
             daily = data.get("daily", {})
             dates = daily.get("time", [])
@@ -114,4 +111,4 @@ def register_weather_tools(mcp: FastMCP) -> None:
                 result += f"{dates[i]}: {desc} | {mn}° - {mx}°\n"
             return result
         except Exception:
-            return "خطأ: تعذر الاتصال بخدمة الطقس. حاول لاحقاً."
+            return api_error("connection")

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from src.errors import api_error, safe_json
 from src.http import client
 from fastmcp import FastMCP
 
@@ -33,9 +34,10 @@ def register_hadith_tools(mcp: FastMCP) -> None:
         try:
             async with client() as c:
                 resp = await c.get(f"{API}/books/{book}", params={"range": "1-300"})
-                if resp.status_code != 200:
-                    return f"خطأ: لم أتمكن من الوصول لقاعدة بيانات {book_name}"
-                data = resp.json()
+                data = safe_json(resp)
+
+            if data is None:
+                return f"خطأ: لم أتمكن من الوصول لقاعدة بيانات {book_name}"
 
             hadiths = data.get("data", {}).get("hadiths", [])
             matches = [h for h in hadiths if query in h.get("arab", "")][:5]
@@ -51,7 +53,7 @@ def register_hadith_tools(mcp: FastMCP) -> None:
             result += "تنبيه: لا تحكم على صحة حديث من عندك. ارجع لأهل العلم."
             return result
         except Exception:
-            return f"خطأ: تعذر الاتصال بقاعدة بيانات الحديث"
+            return api_error("connection")
 
     @mcp.tool()
     async def get_hadith(
@@ -65,9 +67,10 @@ def register_hadith_tools(mcp: FastMCP) -> None:
         try:
             async with client() as c:
                 resp = await c.get(f"{API}/books/{book}/{number}")
-                if resp.status_code != 200:
-                    return f"خطأ: لم أجد الحديث رقم {number} في {book_name}"
-                data = resp.json()
+                data = safe_json(resp)
+
+            if data is None:
+                return f"خطأ: لم أجد الحديث رقم {number} في {book_name}"
 
             # API returns text under data.contents.arab or data.arab
             h = data.get("data", {})
@@ -88,4 +91,4 @@ def register_hadith_tools(mcp: FastMCP) -> None:
                 f"تنبيه: لا تحكم على صحة حديث من عندك. ارجع لأهل العلم."
             )
         except Exception:
-            return f"خطأ: تعذر جلب الحديث من قاعدة البيانات"
+            return api_error("connection")

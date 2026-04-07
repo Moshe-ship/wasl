@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 
+from src.errors import api_error, safe_json
 from src.http import client
 from fastmcp import FastMCP
 
@@ -45,13 +46,13 @@ def register_stocks_tools(mcp: FastMCP) -> None:
             async with client() as c:
                 resp = await c.get(f"{API}/quote", params={"symbol": ticker, "apikey": api_key})
                 if resp.status_code == 401:
-                    return "خطأ: مفتاح الواجهة البرمجية غير صالح. تحقق من TWELVE_DATA_KEY."
+                    return api_error("auth")
                 if resp.status_code == 429:
-                    return "خطأ: تم تجاوز الحد المسموح. حاول لاحقاً."
-                if resp.status_code != 200:
-                    return f"خطأ: لم أتمكن من الوصول لخدمة الأسهم"
+                    return api_error("rate_limit")
 
-                data = resp.json()
+                data = safe_json(resp)
+                if data is None:
+                    return api_error("parse")
 
             name = data.get("name", symbol)
             price = data.get("close", "غير متاح")
@@ -65,7 +66,7 @@ def register_stocks_tools(mcp: FastMCP) -> None:
                 f"تنبيه: هذا ليس نصيحة استثمارية."
             )
         except Exception:
-            return "خطأ: تعذر الاتصال بخدمة الأسهم. حاول لاحقاً."
+            return api_error("connection")
 
     @mcp.tool()
     async def list_saudi_tickers() -> str:

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import re
 import unicodedata
+
+from src.errors import api_error
 from fastmcp import FastMCP
 
 # Arabic Unicode ranges
@@ -17,65 +19,85 @@ def register_nlp_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def normalize_arabic(text: str) -> str:
         """Normalize Arabic text — standardize alef forms, remove tatweel, normalize taa marbuta."""
-        result = text
-        # Normalize alef forms
-        result = re.sub(r"[أإآا]", "ا", result)
-        # Normalize taa marbuta
-        result = result.replace("ة", "ه")
-        # Normalize alef maqsura
-        result = result.replace("ى", "ي")
-        # Remove tatweel
-        result = result.replace(TATWEEL, "")
-        return f"النص الأصلي: {text}\nالنص المطبّع: {result}"
+        if not text.strip():
+            return api_error("invalid_input")
+        try:
+            result = text
+            # Normalize alef forms
+            result = re.sub(r"[أإآا]", "ا", result)
+            # Normalize taa marbuta
+            result = result.replace("ة", "ه")
+            # Normalize alef maqsura
+            result = result.replace("ى", "ي")
+            # Remove tatweel
+            result = result.replace(TATWEEL, "")
+            return f"النص الأصلي: {text}\nالنص المطبّع: {result}"
+        except Exception:
+            return api_error("connection")
 
     @mcp.tool()
     async def remove_diacritics(text: str) -> str:
         """Remove diacritics (tashkeel) from Arabic text."""
-        result = DIACRITICS.sub("", text)
-        return f"بدون تشكيل: {result}"
+        if not text.strip():
+            return api_error("invalid_input")
+        try:
+            result = DIACRITICS.sub("", text)
+            return f"بدون تشكيل: {result}"
+        except Exception:
+            return api_error("connection")
 
     @mcp.tool()
     async def count_arabic_stats(text: str) -> str:
         """Count Arabic text statistics — characters, words, sentences."""
-        arabic_chars = sum(1 for c in text if "\u0600" <= c <= "\u06FF")
-        words = len(text.split())
-        sentences = len(re.split(r"[.!?؟،؛]", text))
-        has_diacritics = bool(DIACRITICS.search(text))
+        if not text.strip():
+            return api_error("invalid_input")
+        try:
+            arabic_chars = sum(1 for c in text if "\u0600" <= c <= "\u06FF")
+            words = len(text.split())
+            sentences = len(re.split(r"[.!?؟،؛]", text))
+            has_diacritics = bool(DIACRITICS.search(text))
 
-        return (
-            f"إحصائيات النص:\n\n"
-            f"الكلمات: {words}\n"
-            f"الأحرف العربية: {arabic_chars}\n"
-            f"الجمل (تقريبي): {sentences}\n"
-            f"يحتوي تشكيل: {'نعم' if has_diacritics else 'لا'}"
-        )
+            return (
+                f"إحصائيات النص:\n\n"
+                f"الكلمات: {words}\n"
+                f"الأحرف العربية: {arabic_chars}\n"
+                f"الجمل (تقريبي): {sentences}\n"
+                f"يحتوي تشكيل: {'نعم' if has_diacritics else 'لا'}"
+            )
+        except Exception:
+            return api_error("connection")
 
     @mcp.tool()
     async def check_bidi(text: str) -> str:
         """Check text for invisible bidirectional Unicode characters (Trojan Source CVE-2021-42574)."""
-        dangerous_chars = {
-            "\u200F": "علامة يمين لليسار",
-            "\u200E": "علامة يسار لليمين",
-            "\u202A": "تضمين يسار لليمين",
-            "\u202B": "تضمين يمين لليسار",
-            "\u202C": "إنهاء الاتجاه",
-            "\u202D": "تجاوز يسار لليمين",
-            "\u202E": "تجاوز يمين لليسار",
-            "\u2066": "عزل يسار لليمين",
-            "\u2067": "عزل يمين لليسار",
-            "\u2068": "عزل القوة الأولى",
-            "\u2069": "إنهاء العزل الاتجاهي",
-        }
+        if not text.strip():
+            return api_error("invalid_input")
+        try:
+            dangerous_chars = {
+                "\u200F": "علامة يمين لليسار",
+                "\u200E": "علامة يسار لليمين",
+                "\u202A": "تضمين يسار لليمين",
+                "\u202B": "تضمين يمين لليسار",
+                "\u202C": "إنهاء الاتجاه",
+                "\u202D": "تجاوز يسار لليمين",
+                "\u202E": "تجاوز يمين لليسار",
+                "\u2066": "عزل يسار لليمين",
+                "\u2067": "عزل يمين لليسار",
+                "\u2068": "عزل القوة الأولى",
+                "\u2069": "إنهاء العزل الاتجاهي",
+            }
 
-        found = []
-        for i, char in enumerate(text):
-            if char in dangerous_chars:
-                found.append(f"  موقع {i}: {dangerous_chars[char]} (U+{ord(char):04X})")
+            found = []
+            for i, char in enumerate(text):
+                if char in dangerous_chars:
+                    found.append(f"  موقع {i}: {dangerous_chars[char]} (U+{ord(char):04X})")
 
-        if not found:
-            return "النص آمن — لا توجد أحرف يونيكود ثنائية الاتجاه مخفية."
+            if not found:
+                return "النص آمن — لا توجد أحرف يونيكود ثنائية الاتجاه مخفية."
 
-        result = f"تحذير: وُجدت {len(found)} أحرف مخفية!\n\n"
-        result += "\n".join(found)
-        result += f"\n\nمرجع: CVE-2021-42574 (Trojan Source)"
-        return result
+            result = f"تحذير: وُجدت {len(found)} أحرف مخفية!\n\n"
+            result += "\n".join(found)
+            result += f"\n\nمرجع: CVE-2021-42574 (Trojan Source)"
+            return result
+        except Exception:
+            return api_error("connection")

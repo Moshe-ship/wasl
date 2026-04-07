@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -e .
+          pip install pytest pytest-asyncio
+
+      - name: Run unit tests
+        run: python -m pytest tests/test_tools.py -v
+
+      - name: Run mocked integration tests
+        run: python -m pytest tests/test_mocked.py -v
+
+      - name: Contract check — all errors are Arabic
+        run: python -m pytest tests/test_mocked.py::test_all_error_messages_are_arabic -v
+
+      - name: Import check — server loads all tools
+        run: python -c "from src.server import mcp; print(f'Server {mcp.name} loaded')"
+
+      - name: No hardcoded secrets
+        run: |
+          if grep -rE 'sk-[a-zA-Z0-9]{20,}' --include="*.py" src/; then
+            echo "FAIL: hardcoded secrets"
+            exit 1
+          fi
+          echo "PASS"

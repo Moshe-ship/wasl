@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import re
+
+from src.errors import api_error, safe_json
 from src.http import client
 from fastmcp import FastMCP
 
@@ -29,7 +32,10 @@ def register_hijri_tools(mcp: FastMCP) -> None:
         try:
             async with client() as c:
                 resp = await c.get(f"{API}/gToH")
-                data = resp.json()
+                data = safe_json(resp)
+
+            if data is None:
+                return api_error("parse")
 
             if data.get("code") != 200:
                 return "خطأ: لم أتمكن من جلب التاريخ الهجري"
@@ -41,8 +47,8 @@ def register_hijri_tools(mcp: FastMCP) -> None:
                 f"الموافق: {g['date']}\n"
                 f"اليوم: {h['weekday']['ar']}"
             )
-        except Exception as e:
-            return "خطأ: تعذر الاتصال بالخدمة. حاول لاحقاً."
+        except Exception:
+            return api_error("connection")
 
     @mcp.tool()
     async def convert_date(
@@ -54,11 +60,18 @@ def register_hijri_tools(mcp: FastMCP) -> None:
         direction: 'g_to_h' (Gregorian to Hijri) or 'h_to_g' (Hijri to Gregorian).
         date format: DD-MM-YYYY
         """
+        if direction not in ("g_to_h", "h_to_g"):
+            return api_error("invalid_input")
+        if not re.match(r"^\d{2}-\d{2}-\d{4}$", date):
+            return api_error("invalid_input")
         endpoint = "gToH" if direction == "g_to_h" else "hToG"
         try:
             async with client() as c:
                 resp = await c.get(f"{API}/{endpoint}/{date}")
-                data = resp.json()
+                data = safe_json(resp)
+
+            if data is None:
+                return api_error("parse")
 
             if data.get("code") != 200:
                 return f"خطأ: لم أتمكن من تحويل التاريخ {date}"
@@ -69,8 +82,8 @@ def register_hijri_tools(mcp: FastMCP) -> None:
                 f"هجري: {h['day']} {h['month']['ar']} {h['year']} هـ\n"
                 f"ميلادي: {g['date']}"
             )
-        except Exception as e:
-            return "خطأ: تعذر الاتصال بالخدمة. حاول لاحقاً."
+        except Exception:
+            return api_error("connection")
 
     @mcp.tool()
     async def islamic_events() -> str:

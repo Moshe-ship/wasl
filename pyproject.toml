@@ -1,6 +1,6 @@
 [project]
 name = "wasl-mcp"
-version = "0.1.0"
+version = "0.3.0"
 description = "The first comprehensive Arabic MCP server — prayer times, Quran, Hadith, translation, dialect detection, zakat, weather, stocks, NLP, and more"
 requires-python = ">=3.10"
 license = "MIT"

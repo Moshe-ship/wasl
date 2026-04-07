@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from src.errors import api_error, safe_json
 from src.http import client
 from fastmcp import FastMCP
 
@@ -21,24 +22,29 @@ def register_zakat_tools(mcp: FastMCP) -> None:
 
         wealth_type: cash, gold, silver, stocks, business
         """
-        zakat_amount = amount * ZAKAT_RATE
+        if amount < 0:
+            return api_error("invalid_input")
+        try:
+            zakat_amount = amount * ZAKAT_RATE
 
-        type_names = {
-            "cash": "نقد",
-            "gold": "ذهب",
-            "silver": "فضة",
-            "stocks": "أسهم",
-            "business": "عروض تجارة",
-        }
-        type_ar = type_names.get(wealth_type, wealth_type)
+            type_names = {
+                "cash": "نقد",
+                "gold": "ذهب",
+                "silver": "فضة",
+                "stocks": "أسهم",
+                "business": "عروض تجارة",
+            }
+            type_ar = type_names.get(wealth_type, wealth_type)
 
-        result = f"حساب الزكاة\n\n"
-        result += f"المبلغ: {amount:,.2f} {currency}\n"
-        result += f"النوع: {type_ar}\n"
-        result += f"النسبة: 2.5%\n"
-        result += f"الزكاة المستحقة: {zakat_amount:,.2f} {currency}\n\n"
-        result += f"تنبيه: هذا حساب تقريبي. استشر مستشارك الشرعي للحالات المعقدة."
-        return result
+            result = f"حساب الزكاة\n\n"
+            result += f"المبلغ: {amount:,.2f} {currency}\n"
+            result += f"النوع: {type_ar}\n"
+            result += f"النسبة: 2.5%\n"
+            result += f"الزكاة المستحقة: {zakat_amount:,.2f} {currency}\n\n"
+            result += f"تنبيه: هذا حساب تقريبي. استشر مستشارك الشرعي للحالات المعقدة."
+            return result
+        except Exception:
+            return api_error("connection")
 
     @mcp.tool()
     async def get_gold_price() -> str:
@@ -49,7 +55,10 @@ def register_zakat_tools(mcp: FastMCP) -> None:
                     "https://api.gold-api.com/price/XAU",
                     timeout=10.0,
                 )
-                data = resp.json()
+                data = safe_json(resp)
+
+            if data is None:
+                return api_error("parse")
 
             price_usd = data.get("price", 0)
             if price_usd <= 0:
@@ -67,8 +76,4 @@ def register_zakat_tools(mcp: FastMCP) -> None:
                 f"  بالريال (تقريبي): {nisab_sar:,.2f} ر.س"
             )
         except Exception:
-            return (
-                f"لم أتمكن من جلب سعر الذهب حالياً.\n"
-                f"نصاب الزكاة = {NISAB_GOLD_GRAMS} غرام ذهب.\n"
-                f"تحقق من السعر الحالي وقم بالحساب يدوياً."
-            )
+            return api_error("connection")

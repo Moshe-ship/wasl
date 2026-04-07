@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from src.errors import api_error, safe_json
 from src.http import client
 from fastmcp import FastMCP
 
@@ -28,13 +29,18 @@ def register_prayer_tools(mcp: FastMCP) -> None:
 
         Methods: 1=Karachi, 2=ISNA, 3=MWL, 4=Umm al-Qura, 5=Egyptian
         """
+        if not city.strip():
+            return api_error("invalid_input")
         try:
             async with client() as c:
                 resp = await c.get(
                     f"{API}/timingsByCity",
                     params={"city": city, "country": country, "method": method},
                 )
-                data = resp.json()
+                data = safe_json(resp)
+
+            if data is None:
+                return api_error("parse")
 
             if data.get("code") != 200:
                 return f"خطأ: لم أتمكن من جلب أوقات الصلاة لـ {city}"
@@ -53,8 +59,8 @@ def register_prayer_tools(mcp: FastMCP) -> None:
             result += f"المغرب: {timings['Maghrib']}\n"
             result += f"العشاء: {timings['Isha']}\n"
             return result
-        except Exception as e:
-            return "خطأ: تعذر الاتصال بالخدمة. حاول لاحقاً."
+        except Exception:
+            return api_error("connection")
 
     @mcp.tool()
     async def get_qibla_direction(
@@ -65,12 +71,15 @@ def register_prayer_tools(mcp: FastMCP) -> None:
         try:
             async with client() as c:
                 resp = await c.get(f"{API}/qibla/{latitude}/{longitude}")
-                data = resp.json()
+                data = safe_json(resp)
+
+            if data is None:
+                return api_error("parse")
 
             if data.get("code") != 200:
                 return "خطأ: لم أتمكن من حساب اتجاه القبلة"
 
             direction = data["data"]["direction"]
             return f"اتجاه القبلة: {direction:.2f} درجة من الشمال"
-        except Exception as e:
-            return "خطأ: تعذر الاتصال بالخدمة. حاول لاحقاً."
+        except Exception:
+            return api_error("connection")

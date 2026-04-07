@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from src.errors import api_error, safe_json
 from src.http import client
 from fastmcp import FastMCP
 
@@ -13,6 +14,8 @@ def register_news_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def search_arabic_news(query: str) -> str:
         """Search for Arabic news using DuckDuckGo with Arabic region bias."""
+        if not query.strip():
+            return api_error("invalid_input")
         try:
             async with client() as c:
                 resp = await c.get(
@@ -25,7 +28,10 @@ def register_news_tools(mcp: FastMCP) -> None:
                     },
                     timeout=10.0,
                 )
-                data = resp.json()
+                data = safe_json(resp)
+
+            if data is None:
+                return api_error("parse")
 
             # Extract results
             results = []
@@ -60,5 +66,5 @@ def register_news_tools(mcp: FastMCP) -> None:
                 output += "\n"
 
             return output
-        except Exception as e:
-            return "خطأ: تعذر الاتصال بالخدمة. حاول لاحقاً."
+        except Exception:
+            return api_error("connection")
