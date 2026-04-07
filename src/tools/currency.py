@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from src.errors import api_error
 from src.http import client
 from fastmcp import FastMCP
 
@@ -39,8 +40,8 @@ def register_currency_tools(mcp: FastMCP) -> None:
         from_code = from_currency.upper()
         to_code = to_currency.upper()
 
-        if amount < 0:
-            return "خطأ: المبلغ يجب أن يكون أكبر من صفر"
+        if amount <= 0:
+            return api_error("invalid_input")
 
         from_rate = USD_RATES.get(from_code)
         to_rate = USD_RATES.get(to_code)
