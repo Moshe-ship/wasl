@@ -93,13 +93,33 @@ def register_translate_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def convert_arabizi(text: str) -> str:
         """Convert Arabizi (Franco-Arabic like '7abibi') to Arabic script."""
-        mappings = {
+        # Multi-char mappings first (order matters)
+        multi = [
+            ("sh", "ش"), ("ch", "تش"), ("kh", "خ"), ("gh", "غ"),
+            ("th", "ث"), ("dh", "ذ"), ("ph", "ف"),
+            ("3'", "غ"), ("5'", "خ"), ("6'", "ظ"), ("9'", "ض"),
+            ("ou", "و"), ("oo", "و"), ("ee", "ي"), ("aa", "ا"),
+        ]
+        # Single-char mappings
+        single = {
             "2": "ء", "3": "ع", "5": "خ", "6": "ط",
             "7": "ح", "8": "ق", "9": "ص",
-            "3'": "غ", "5'": "خ", "6'": "ظ", "9'": "ض",
+            "a": "ا", "b": "ب", "t": "ت", "j": "ج",
+            "d": "د", "r": "ر", "z": "ز", "s": "س",
+            "f": "ف", "q": "ق", "k": "ك", "l": "ل",
+            "m": "م", "n": "ن", "h": "ه", "w": "و",
+            "y": "ي", "i": "ي", "u": "و", "o": "و",
+            "e": "ي", "p": "ب", "v": "ف", "g": "ج",
         }
-        result = text
-        # Apply multi-char mappings first
-        for arabizi, arabic in sorted(mappings.items(), key=lambda x: -len(x[0])):
+
+        result = text.lower()
+        # Apply multi-char first
+        for arabizi, arabic in multi:
             result = result.replace(arabizi, arabic)
-        return f"التحويل: {result}"
+        # Apply single-char
+        out = []
+        for char in result:
+            out.append(single.get(char, char))
+        result = "".join(out)
+
+        return f"النص الأصلي: {text}\nالتحويل: {result}"

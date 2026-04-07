@@ -16,6 +16,8 @@ BOOKS = {
     "ibnmajah": "سنن ابن ماجه",
 }
 
+VALID_BOOKS = set(BOOKS.keys())
+
 
 def register_hadith_tools(mcp: FastMCP) -> None:
 
@@ -25,14 +27,15 @@ def register_hadith_tools(mcp: FastMCP) -> None:
         book: str = "bukhari",
     ) -> str:
         """Search hadith by keyword. Books: bukhari, muslim, abudawud, tirmidhi, nasai, ibnmajah."""
-        book_name = BOOKS.get(book, book)
+        if book not in VALID_BOOKS:
+            return f"كتاب غير معروف: {book}. الكتب المتاحة: {', '.join(VALID_BOOKS)}"
+        book_name = BOOKS[book]
         try:
             async with client() as c:
                 resp = await c.get(f"{API}/books/{book}", params={"range": "1-300"})
+                if resp.status_code != 200:
+                    return f"خطأ: لم أتمكن من الوصول لقاعدة بيانات {book_name}"
                 data = resp.json()
-
-            if data.get("code") != 200:
-                return f"خطأ: لم أتمكن من البحث في {book_name}"
 
             hadiths = data.get("data", {}).get("hadiths", [])
             matches = [h for h in hadiths if query in h.get("arab", "")][:5]
@@ -47,8 +50,8 @@ def register_hadith_tools(mcp: FastMCP) -> None:
 
             result += "تنبيه: لا تحكم على صحة حديث من عندك. ارجع لأهل العلم."
             return result
-        except Exception as e:
-            return f"خطأ: {type(e).__name__}"
+        except Exception:
+            return f"خطأ: تعذر الاتصال بقاعدة بيانات الحديث"
 
     @mcp.tool()
     async def get_hadith(
@@ -56,19 +59,33 @@ def register_hadith_tools(mcp: FastMCP) -> None:
         number: int,
     ) -> str:
         """Get a specific hadith by book and number."""
-        book_name = BOOKS.get(book, book)
+        if book not in VALID_BOOKS:
+            return f"كتاب غير معروف: {book}. الكتب المتاحة: {', '.join(VALID_BOOKS)}"
+        book_name = BOOKS[book]
         try:
             async with client() as c:
                 resp = await c.get(f"{API}/books/{book}/{number}")
+                if resp.status_code != 200:
+                    return f"خطأ: لم أجد الحديث رقم {number} في {book_name}"
                 data = resp.json()
 
-            if data.get("code") != 200:
-                return f"خطأ: لم أجد الحديث رقم {number} في {book_name}"
-
+            # API returns text under data.contents.arab or data.arab
             h = data.get("data", {})
+            arab_text = ""
+            if isinstance(h, dict):
+                contents = h.get("contents", {})
+                if isinstance(contents, dict):
+                    arab_text = contents.get("arab", "")
+                if not arab_text:
+                    arab_text = h.get("arab", "")
+
+            if not arab_text:
+                return f"خطأ: لم أجد نص الحديث رقم {number} في {book_name}"
+
             return (
-                f"{h.get('arab', '')}\n\n"
-                f"— {book_name}، رقم {h.get('number', '?')}"
+                f"{arab_text}\n\n"
+                f"— {book_name}، رقم {h.get('number', number)}\n\n"
+                f"تنبيه: لا تحكم على صحة حديث من عندك. ارجع لأهل العلم."
             )
-        except Exception as e:
-            return f"خطأ: {type(e).__name__}"
+        except Exception:
+            return f"خطأ: تعذر جلب الحديث من قاعدة البيانات"

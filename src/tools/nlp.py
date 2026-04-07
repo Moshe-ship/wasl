@@ -54,17 +54,17 @@ def register_nlp_tools(mcp: FastMCP) -> None:
     async def check_bidi(text: str) -> str:
         """Check text for invisible bidirectional Unicode characters (Trojan Source CVE-2021-42574)."""
         dangerous_chars = {
-            "\u200F": "RTL Mark",
-            "\u200E": "LTR Mark",
-            "\u202A": "LTR Embedding",
-            "\u202B": "RTL Embedding",
-            "\u202C": "Pop Directional",
-            "\u202D": "LTR Override",
-            "\u202E": "RTL Override",
-            "\u2066": "LTR Isolate",
-            "\u2067": "RTL Isolate",
-            "\u2068": "First Strong Isolate",
-            "\u2069": "Pop Directional Isolate",
+            "\u200F": "علامة يمين لليسار",
+            "\u200E": "علامة يسار لليمين",
+            "\u202A": "تضمين يسار لليمين",
+            "\u202B": "تضمين يمين لليسار",
+            "\u202C": "إنهاء الاتجاه",
+            "\u202D": "تجاوز يسار لليمين",
+            "\u202E": "تجاوز يمين لليسار",
+            "\u2066": "عزل يسار لليمين",
+            "\u2067": "عزل يمين لليسار",
+            "\u2068": "عزل القوة الأولى",
+            "\u2069": "إنهاء العزل الاتجاهي",
         }
 
         found = []

@@ -1,4 +1,4 @@
-"""Saudi stocks tools — Twelve Data API (free tier: 800 req/day)."""
+"""Saudi stocks tools — Twelve Data API (requires TWELVE_DATA_KEY env var)."""
 
 from __future__ import annotations
 
@@ -24,46 +24,48 @@ SAUDI_TICKERS = {
 def register_stocks_tools(mcp: FastMCP) -> None:
 
     @mcp.tool()
-    async def get_stock_price(
-        symbol: str,
-    ) -> str:
-        """Get stock price from Tadawul. Use ticker like '2222.SAU' for Aramco, or Arabic name like 'أرامكو'.
+    async def get_stock_price(symbol: str) -> str:
+        """Get stock price from Tadawul. Use ticker like '2222.SAU' or Arabic name like 'أرامكو'.
 
         Requires TWELVE_DATA_KEY environment variable.
         """
-        api_key = os.environ.get("TWELVE_DATA_KEY", "demo")
+        api_key = os.environ.get("TWELVE_DATA_KEY", "")
+        if not api_key:
+            return (
+                "خطأ: متغير البيئة TWELVE_DATA_KEY غير مضبوط.\n"
+                "سجل مجاناً في twelvedata.com واضبط المتغير:\n"
+                "export TWELVE_DATA_KEY=your_key"
+            )
 
-        # Map Arabic name to ticker
         ticker = SAUDI_TICKERS.get(symbol, symbol)
-        if not ticker.endswith(".SAU") and not "." in ticker:
+        if "." not in ticker:
             ticker = f"{ticker}.SAU"
 
         try:
             async with client() as c:
-                resp = await c.get(
-                    f"{API}/quote",
-                    params={"symbol": ticker, "apikey": api_key},
-                )
+                resp = await c.get(f"{API}/quote", params={"symbol": ticker, "apikey": api_key})
+                if resp.status_code == 401:
+                    return "خطأ: مفتاح الواجهة البرمجية غير صالح. تحقق من TWELVE_DATA_KEY."
+                if resp.status_code == 429:
+                    return "خطأ: تم تجاوز الحد المسموح. حاول لاحقاً."
+                if resp.status_code != 200:
+                    return f"خطأ: لم أتمكن من الوصول لخدمة الأسهم"
+
                 data = resp.json()
 
-            if "code" in data and data["code"] != 200:
-                return f"خطأ: لم أتمكن من جلب سعر {symbol}. تأكد من رمز السهم."
-
             name = data.get("name", symbol)
-            price = data.get("close", "?")
+            price = data.get("close", "غير متاح")
             change = data.get("change", "?")
             pct = data.get("percent_change", "?")
-            volume = data.get("volume", "?")
 
             return (
                 f"سهم {name} ({ticker})\n\n"
                 f"السعر: {price} ر.س\n"
-                f"التغير: {change} ({pct}%)\n"
-                f"الحجم: {volume}\n\n"
+                f"التغير: {change} ({pct}%)\n\n"
                 f"تنبيه: هذا ليس نصيحة استثمارية."
             )
-        except Exception as e:
-            return f"خطأ: {type(e).__name__}"
+        except Exception:
+            return "خطأ: تعذر الاتصال بخدمة الأسهم. حاول لاحقاً."
 
     @mcp.tool()
     async def list_saudi_tickers() -> str:
@@ -71,5 +73,5 @@ def register_stocks_tools(mcp: FastMCP) -> None:
         result = "أسهم سعودية شائعة:\n\n"
         for name, ticker in SAUDI_TICKERS.items():
             result += f"  {name}: {ticker}\n"
-        result += "\nللمزيد من الرموز: tadawul.com.sa"
+        result += "\nللمزيد: tadawul.com.sa"
         return result

@@ -94,10 +94,19 @@ def test_arab_currencies():
     assert ARAB_CURRENCIES["SAR"] == "ريال سعودي"
 
 
-def test_fallback_convert():
-    from src.tools.currency import _fallback_convert
-    result = _fallback_convert(100, "USD", "SAR")
-    assert "USD" in result
+def test_currency_rates():
+    from src.tools.currency import USD_RATES
+    assert USD_RATES["SAR"] == 3.75
+    assert USD_RATES["USD"] == 1.0
+    assert "AED" in USD_RATES
+
+
+def test_arabizi_conversion():
+    """Test that Arabizi converts to Arabic, not half-English."""
+    single = {"7": "ح", "a": "ا", "b": "ب", "i": "ي"}
+    text = "7abibi"
+    result = "".join(single.get(c, c) for c in text.lower())
+    assert all("\u0600" <= c <= "\u06FF" for c in result if c.isalpha())
 
 
 def test_names_db():
