@@ -93,33 +93,105 @@ def register_translate_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     async def convert_arabizi(text: str) -> str:
         """Convert Arabizi (Franco-Arabic like '7abibi') to Arabic script."""
-        # Multi-char mappings first (order matters)
-        multi = [
-            ("sh", "ش"), ("ch", "تش"), ("kh", "خ"), ("gh", "غ"),
-            ("th", "ث"), ("dh", "ذ"), ("ph", "ف"),
-            ("3'", "غ"), ("5'", "خ"), ("6'", "ظ"), ("9'", "ض"),
-            ("ou", "و"), ("oo", "و"), ("ee", "ي"), ("aa", "ا"),
-        ]
-        # Single-char mappings
-        single = {
-            "2": "ء", "3": "ع", "5": "خ", "6": "ط",
-            "7": "ح", "8": "ق", "9": "ص",
-            "a": "ا", "b": "ب", "t": "ت", "j": "ج",
-            "d": "د", "r": "ر", "z": "ز", "s": "س",
-            "f": "ف", "q": "ق", "k": "ك", "l": "ل",
-            "m": "م", "n": "ن", "h": "ه", "w": "و",
-            "y": "ي", "i": "ي", "u": "و", "o": "و",
-            "e": "ي", "p": "ب", "v": "ف", "g": "ج",
-        }
-
-        result = text.lower()
-        # Apply multi-char first
-        for arabizi, arabic in multi:
-            result = result.replace(arabizi, arabic)
-        # Apply single-char
-        out = []
-        for char in result:
-            out.append(single.get(char, char))
-        result = "".join(out)
-
+        result = _arabizi_to_arabic(text)
         return f"النص الأصلي: {text}\nالتحويل: {result}"
+
+
+def _arabizi_to_arabic(text: str) -> str:
+    """Convert Arabizi to Arabic with proper vowel handling.
+
+    Short vowels between consonants are dropped (Arabic doesn't write them).
+    Long vowels (aa, ee, oo, ou) map to alef/ya/waw.
+    Vowels at word start or end are kept.
+    """
+    CONSONANTS = {
+        "b": "ب", "t": "ت", "j": "ج", "d": "د", "r": "ر",
+        "z": "ز", "s": "س", "f": "ف", "q": "ق", "k": "ك",
+        "l": "ل", "m": "م", "n": "ن", "h": "ه", "w": "و",
+        "y": "ي", "p": "ب", "v": "ف", "g": "ج", "x": "كس",
+    }
+    DIGITS = {
+        "2": "ء", "3": "ع", "5": "خ", "6": "ط",
+        "7": "ح", "8": "ق", "9": "ص",
+    }
+    LONG_VOWELS = {
+        "aa": "ا", "ee": "ي", "oo": "و", "ou": "و", "ii": "ي", "uu": "و",
+    }
+    MULTI = [
+        ("sh", "ش"), ("ch", "تش"), ("kh", "خ"), ("gh", "غ"),
+        ("th", "ث"), ("dh", "ذ"), ("ph", "ف"),
+        ("3'", "غ"), ("5'", "خ"), ("6'", "ظ"), ("9'", "ض"),
+    ]
+
+    words = text.lower().split()
+    arabic_words = []
+
+    for word in words:
+        # Apply multi-char consonant clusters first
+        w = word
+        for lat, ar in MULTI:
+            w = w.replace(lat, ar)
+        # Apply long vowels
+        for lat, ar in LONG_VOWELS.items():
+            w = w.replace(lat, ar)
+
+        # Now process character by character
+        out = []
+        i = 0
+        chars = list(w)
+        while i < len(chars):
+            c = chars[i]
+
+            # Already Arabic (from multi-char replacement)
+            if "\u0600" <= c <= "\u06FF":
+                out.append(c)
+                i += 1
+                continue
+
+            # Digit mappings
+            if c in DIGITS:
+                out.append(DIGITS[c])
+                i += 1
+                continue
+
+            # Consonants always map
+            if c in CONSONANTS:
+                out.append(CONSONANTS[c])
+                i += 1
+                continue
+
+            # Vowels: only emit if at word start, word end, or adjacent to another vowel
+            if c in "aeiou":
+                at_start = (i == 0)
+                at_end = (i == len(chars) - 1)
+                next_is_vowel = (i + 1 < len(chars) and chars[i + 1] in "aeiou")
+                prev_is_vowel = (i > 0 and chars[i - 1] in "aeiou")
+
+                if at_start:
+                    # Word-initial vowel: emit alef
+                    out.append("ا" if c == "a" else "ي" if c in "ei" else "و")
+                elif at_end:
+                    # Word-final: emit if it's i/y (common in Arabic names)
+                    if c in "iy":
+                        out.append("ي")
+                    elif c in "ou":
+                        out.append("و")
+                    # Final 'a' and 'e' are usually silent in Arabic
+                else:
+                    # Mid-word: 'a' and 'e' are short vowels (fatha/kasra) — drop
+                    # 'i' maps to ي, 'u'/'o' maps to و (these are real Arabic letters)
+                    if c == "i":
+                        out.append("ي")
+                    elif c in "uo":
+                        out.append("و")
+                    # 'a' and 'e' between consonants: drop (short vowel/diacritic)
+                i += 1
+                continue
+
+            # Anything else (spaces, punctuation) pass through
+            out.append(c)
+            i += 1
+
+        arabic_words.append("".join(out))
+
+    return " ".join(arabic_words)

@@ -42,7 +42,7 @@ def register_hijri_tools(mcp: FastMCP) -> None:
                 f"اليوم: {h['weekday']['ar']}"
             )
         except Exception as e:
-            return f"خطأ: {type(e).__name__}"
+            return "خطأ: تعذر الاتصال بالخدمة. حاول لاحقاً."
 
     @mcp.tool()
     async def convert_date(
@@ -70,7 +70,7 @@ def register_hijri_tools(mcp: FastMCP) -> None:
                 f"ميلادي: {g['date']}"
             )
         except Exception as e:
-            return f"خطأ: {type(e).__name__}"
+            return "خطأ: تعذر الاتصال بالخدمة. حاول لاحقاً."
 
     @mcp.tool()
     async def islamic_events() -> str:

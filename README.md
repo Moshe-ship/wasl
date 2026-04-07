@@ -142,7 +142,7 @@ Most tools need no configuration. Optional:
 
 | Variable | For | Required? |
 |---|---|---|
-| TWELVE_DATA_KEY | Saudi stocks | Optional (demo key works) |
+| TWELVE_DATA_KEY | Saudi stocks | Required (free at twelvedata.com) |
 
 ## Development
 

@@ -40,7 +40,7 @@ def register_quran_tools(mcp: FastMCP) -> None:
                 result += f"— {surah} : {number}\n\n"
             return result
         except Exception as e:
-            return f"خطأ في البحث: {type(e).__name__}"
+            return "خطأ: تعذر البحث في القرآن. حاول لاحقاً."
 
     @mcp.tool()
     async def get_verse(
@@ -65,7 +65,7 @@ def register_quran_tools(mcp: FastMCP) -> None:
                 f"— {ayah_data['surah']['name']} : {ayah_data['numberInSurah']}"
             )
         except Exception as e:
-            return f"خطأ في جلب الآية: {type(e).__name__}"
+            return "خطأ: تعذر جلب الآية. حاول لاحقاً."
 
     @mcp.tool()
     async def get_surah(
@@ -84,12 +84,13 @@ def register_quran_tools(mcp: FastMCP) -> None:
                 return f"لم أجد السورة رقم {surah_number}"
 
             s = data["data"]
-            result = f"{s['name']} ({s['englishName']})\n"
-            result += f"عدد الآيات: {s['numberOfAyahs']} | {s['revelationType']}\n\n"
+            revelation = "مكية" if s.get("revelationType") == "Meccan" else "مدنية"
+            result = f"{s['name']}\n"
+            result += f"عدد الآيات: {s['numberOfAyahs']} | {revelation}\n\n"
             for ayah in s["ayahs"][:5]:
                 result += f"﴿{ayah['text']}﴾ ({ayah['numberInSurah']})\n"
             if s["numberOfAyahs"] > 5:
                 result += f"\n... و {s['numberOfAyahs'] - 5} آية أخرى"
             return result
         except Exception as e:
-            return f"خطأ في جلب السورة: {type(e).__name__}"
+            return "خطأ: تعذر جلب السورة. حاول لاحقاً."

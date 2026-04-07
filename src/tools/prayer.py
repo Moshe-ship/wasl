@@ -54,7 +54,7 @@ def register_prayer_tools(mcp: FastMCP) -> None:
             result += f"العشاء: {timings['Isha']}\n"
             return result
         except Exception as e:
-            return f"خطأ: {type(e).__name__}"
+            return "خطأ: تعذر الاتصال بالخدمة. حاول لاحقاً."
 
     @mcp.tool()
     async def get_qibla_direction(
@@ -73,4 +73,4 @@ def register_prayer_tools(mcp: FastMCP) -> None:
             direction = data["data"]["direction"]
             return f"اتجاه القبلة: {direction:.2f} درجة من الشمال"
         except Exception as e:
-            return f"خطأ: {type(e).__name__}"
+            return "خطأ: تعذر الاتصال بالخدمة. حاول لاحقاً."

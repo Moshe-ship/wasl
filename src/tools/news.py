@@ -61,4 +61,4 @@ def register_news_tools(mcp: FastMCP) -> None:
 
             return output
         except Exception as e:
-            return f"خطأ: {type(e).__name__}"
+            return "خطأ: تعذر الاتصال بالخدمة. حاول لاحقاً."

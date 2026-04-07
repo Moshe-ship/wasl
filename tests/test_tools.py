@@ -102,11 +102,20 @@ def test_currency_rates():
 
 
 def test_arabizi_conversion():
-    """Test that Arabizi converts to Arabic, not half-English."""
-    single = {"7": "ح", "a": "ا", "b": "ب", "i": "ي"}
-    text = "7abibi"
-    result = "".join(single.get(c, c) for c in text.lower())
-    assert all("\u0600" <= c <= "\u06FF" for c in result if c.isalpha())
+    """Test that Arabizi converts correctly — short vowels dropped, no Latin output."""
+    from src.tools.translate import _arabizi_to_arabic
+
+    # 7abibi -> حبيبي (short vowels between consonants dropped)
+    result = _arabizi_to_arabic("7abibi")
+    assert result == "حبيبي", f"Expected حبيبي, got {result}"
+
+    # No Latin letters should remain in any conversion
+    result = _arabizi_to_arabic("marhaba")
+    assert not any("a" <= c <= "z" for c in result), f"Latin chars in: {result}"
+
+    # yalla -> يلا
+    result = _arabizi_to_arabic("yalla")
+    assert "ي" in result and "ل" in result
 
 
 def test_names_db():
